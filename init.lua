@@ -174,27 +174,27 @@ local plugins = {
             require("nvim-tree").setup {
                 view = {
                     adaptive_size = true,
+                },
 
-                    renderer = {
-                        group_empty = true,
-                        highlight_git = true,
-                        icons = {
-                            show = {
-                                git = false
-                            }
+                renderer = {
+                    group_empty = true,
+                    highlight_git = true,
+                    icons = {
+                        show = {
+                            git = false
                         }
-                    },
+                    }
+                },
 
-                    filters = {
-                        dotfiles = true, -- don't show dotfiles
-                    },
-                    sync_root_with_cwd = true,
-                    respect_buf_cwd = true,
-                    update_focused_file = {
-                        enable = true,
-                        update_root = true
-                    },
-                }
+                filters = {
+                    dotfiles = true, -- don't show dotfiles
+                },
+                sync_root_with_cwd = true,
+                respect_buf_cwd = true,
+                update_focused_file = {
+                    enable = true,
+                    update_root = true
+                },
             }
 
             local wk = require("which-key")
