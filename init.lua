@@ -1,4 +1,6 @@
-local colorscheme = "github_dark_dimmed"
+local dark_colorscheme = "terafox"
+local light_colorscheme = "github_light"
+local colorscheme = light_colorscheme
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -52,7 +54,7 @@ LualinePlugins = {
         if navic.is_available() then
             return navic.get_location()
         else
-            return "  "
+            return " ## "
         end
     end,
     lsp_clients = function()
@@ -91,6 +93,23 @@ local plugins = {
                     additional_vim_regex_highlighting = false,
                 },
             }
+        end
+    },
+
+    {
+        "nvim-telescope/telescope.nvim",
+        config = function()
+            require("telescope").setup {
+
+            }
+        end
+    },
+
+    {
+        'nvim-telescope/telescope-ui-select.nvim',
+        dependencies = {"nvim-telescope/telescope.nvim"},
+        config = function ()
+            require("telescope").load_extension("ui-select")
         end
     },
 
@@ -146,10 +165,26 @@ local plugins = {
     "rebelot/kanagawa.nvim",
 
     {
+        "Shatur/neovim-ayu",
+        config = function ()
+            require('ayu').setup {
+                mirage = false
+            }
+        end
+    },
+
+    {
         "projekt0n/github-nvim-theme",
         lazy = false,
         config = function()
             require("github-theme").setup {}
+        end
+    },
+
+    {
+        "loctvl842/monokai-pro.nvim",
+        config = function()
+            require("monokai-pro").setup()
         end
     },
 
@@ -456,6 +491,7 @@ local plugins = {
 
             rt.setup({
                 server = {
+                    cmd = { "/home/subwave/.rustup/toolchains/stable-x86_64-unknown-linux-gnu/bin/rust-analyzer" },
                     on_attach = function(_, bufnr)
                         local wk = require("which-key")
                         wk.register({
@@ -505,7 +541,7 @@ lsp.on_attach(function(client, bufnr)
         require("nvim-navic").attach(client, bufnr)
     end
     -- nvim_tree_on_attach(bufnr)
-    -- client.server_capabilities.semanticTokensProvider = nil
+    client.server_capabilities.semanticTokensProvider = nil
     require("lsp-inlayhints").on_attach(client, bufnr)
 end)
 
@@ -624,7 +660,15 @@ wk.register({
 })
 
 wk.register({
+    ["1"] = { ".", "Dot operator" }
+}, {
+    noremap = false
+})
+
+wk.register({
     Q = { vim.lsp.buf.code_action, "Code action" },
+    E = { vim.diagnostic.open_float, "Line diagnostics" },
+    R = { vim.lsp.buf.rename, "Rename" }
 }, {
     prefix = "Q"
 })
@@ -636,13 +680,13 @@ wk.register({
     ["<F9>"] = {
         function()
             vim.o.background = "light"
-            vim.cmd[[colorscheme github_light]]
+            vim.cmd("colorscheme " .. light_colorscheme)
         end, "Set light colorscheme"
     },
     ["<F10>"] = {
         function()
             vim.o.background = "dark"
-            vim.cmd[[colorscheme github_dark_dimmed]]
+            vim.cmd("colorscheme " .. dark_colorscheme)
         end, "Set dark colorscheme"
     },
 })
