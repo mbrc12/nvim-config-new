@@ -1,6 +1,6 @@
-local dark_colorscheme = "terafox"
+local dark_colorscheme = "nightly"
 local light_colorscheme = "github_light"
-local colorscheme = light_colorscheme
+local colorscheme = dark_colorscheme
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -185,6 +185,13 @@ local plugins = {
         "loctvl842/monokai-pro.nvim",
         config = function()
             require("monokai-pro").setup()
+        end
+    },
+
+    {
+        "Alexis12119/nightly.nvim",
+        config = function ()
+            require("nightly").setup {}
         end
     },
 
