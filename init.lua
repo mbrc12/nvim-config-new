@@ -229,7 +229,7 @@ local plugins = {
                 },
 
                 filters = {
-                    dotfiles = true, -- don't show dotfiles
+                    dotfiles = false, -- don't show dotfiles
                 },
                 sync_root_with_cwd = true,
                 respect_buf_cwd = true,
@@ -766,3 +766,4 @@ endfunction
 
 vim.api.nvim_set_hl(0, 'FloatBorder', { link = 'Normal' })
 vim.api.nvim_set_hl(0, 'NormalFloat', { link = 'Normal' })
+vim.api.nvim_set_hl(0, 'LspInlayHint', { link = 'Comment' })
