@@ -229,7 +229,7 @@ local plugins = {
                 },
 
                 filters = {
-                    dotfiles = false, -- don't show dotfiles
+                    dotfiles = true, -- don't show dotfiles
                 },
                 sync_root_with_cwd = true,
                 respect_buf_cwd = true,
@@ -402,7 +402,7 @@ local plugins = {
                     -- null_ls.builtins.diagnostics.vale,
                     -- null_ls.builtins.diagnostics.eslint,
                     -- null_ls.builtins.diagnostics.misspell,
-                    null_ls.builtins.diagnostics.proselint,
+                    -- null_ls.builtins.diagnostics.proselint,
                     -- null_ls.builtins.completion.spell,
                 },
             })
@@ -468,7 +468,9 @@ local plugins = {
     {
         "ray-x/lsp_signature.nvim",
         config = function()
-            require("lsp_signature").setup()
+            require("lsp_signature").setup({
+                floating_window = false
+            })
         end
     },
 
@@ -512,6 +514,10 @@ local plugins = {
         end
     },
 
+    {
+        "mfussenegger/nvim-jdtls",
+    },
+
     -- LaTeX
 
     {
@@ -553,6 +559,8 @@ lsp.on_attach(function(client, bufnr)
 end)
 
 lsp.skip_server_setup({'rust_analyzer'})
+lsp.skip_server_setup({'jdtls'})
+
 -- (Optional) Configure lua language server for neovim
 require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
 
