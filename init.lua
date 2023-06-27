@@ -3,6 +3,7 @@ local dark_colorscheme = "nightfox"
 local light_colorscheme = "github_light"
 local colorscheme = light_colorscheme
 
+---{{{ Lazy
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
     vim.fn.system({
@@ -15,7 +16,9 @@ if not vim.loop.fs_stat(lazypath) then
     })
 end
 vim.opt.rtp:prepend(lazypath)
+---}}}
 
+---{{{ Options
 vim.g.mapleader = " "
 -- vim.o.omnifunc="syntaxcomplete#Complete
 vim.o.ruler = true
@@ -29,18 +32,16 @@ vim.o.smartcase = true
 -- vim.o.relativenumber = true
 vim.wo.cursorline = true
 vim.o.errorbells = false
-vim.o.foldenable = false
+vim.o.foldenable = true
 vim.o.foldmethod = "marker"
 vim.o.mouse = "a"
 vim.o.number = true
 vim.o.numberwidth = 5
-
 vim.o.expandtab = true
 vim.o.shiftwidth = 4
 vim.o.smartindent = true
 vim.o.softtabstop = 4
 vim.o.tabstop = 4
-
 vim.o.termguicolors = true
 vim.o.wildmenu = true
 vim.o.wrap = false
@@ -48,7 +49,10 @@ vim.o.clipboard = "unnamedplus"
 -- vim.o.signcolumn="number"
 vim.o.cmdheight = 1
 vim.o.autoread = true
+---}}}
 
+
+---{{{ Lualine
 LualinePlugins = {
     navic_component = function()
         local navic = require("nvim-navic")
@@ -76,7 +80,9 @@ LualinePlugins = {
         return os.date("%H:%M")
     end
 }
+---}}}
 
+---{{{ PLUGINS
 local plugins = {
     -- Global utilities for neovim
     {
@@ -395,8 +401,6 @@ local plugins = {
         end
     }, -- lualine 
 
-
-
     -- General utils for coding
     {
         'tpope/vim-commentary',
@@ -452,7 +456,12 @@ local plugins = {
     },
 
     'saadparwaiz1/cmp_luasnip',
-    'uga-rosa/cmp-dictionary',
+    {
+        'uga-rosa/cmp-dictionary',
+        config = function ()
+            vim.opt_global.dictionary = "/home/subwave/.config/nvim/dicts/en.dict"
+        end
+    },
 
     {
         'L3MON4D3/LuaSnip',
@@ -586,12 +595,13 @@ local plugins = {
     }
 
 }
+---}}}
 
 require('lazy').setup(plugins, {})
 vim.cmd("colorscheme " .. colorscheme)
 
 
------------- Setup LSP ----------------------
+------------ Setup LSP ---------------------- {{{
 require("mason").setup()
 require("mason-lspconfig").setup({
     -- automatic_installation = true
@@ -618,13 +628,13 @@ require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
 
 lsp.setup()
 
+---}}}
 
 --- Setup DAP --------------------
 
 require("mason-nvim-dap").setup {}
 
---- Setup CMP ---------------------
-
+--- Setup CMP --------------------- {{{
 
 local cmp = require('cmp')
 local cmp_action = require('lsp-zero').cmp_action()
@@ -691,14 +701,23 @@ cmp.setup({
             border = "single"
         })
     },
+    formatting = {
+        format = function(entry, vim_item)
+            vim_item.abbr = string.sub(vim_item.abbr, 1, 30)
+            return vim_item
+        end
+    }
 })
+
 
 local dict = require("cmp_dictionary")
 dict.switcher {
     spelllang = {en = "/home/subwave/.config/nvim/dicts/en.dict"}
 }
 
+---}}}
 
+---{{{ Lsp Appearance
 local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
 function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
     opts = opts or {}
@@ -724,12 +743,15 @@ vim.lsp.handlers.signature_help, {
 vim.diagnostic.config{
     float = { border = _border }
 }
+---}}}
 
------------- Keybindings -------------------
+
+------------ Keybindings ----------------{{{
 
 local wk = require("which-key")
 wk.register({
-    ec = { ":e ~/.config/nvim/init.lua<CR>", "Open config" }
+    ec = { ":e ~/.config/nvim/init.lua<CR>", "Open config" },
+    ["/"] = { ":terminal<CR>", "Open terminal" }
 }, {
     prefix = "<leader>"
 })
@@ -770,7 +792,9 @@ wk.register({
 }, {
     mode = 'i'
 })
------- Telescope ------------------
+---}}}
+
+------ Telescope ------------------{{{
 
 local menu = require("nui.menu")
 
@@ -823,8 +847,9 @@ wk.register({
 }, {
     prefix = "<leader>"
 })
+--}}}
 
------ VimTeX settings --------------
+----- VimTeX settings -------------- {{{
 
 wk.register({
     t = { '<cmd>:VimtexCompile<CR>', "Vimtex Compile" },
@@ -840,16 +865,18 @@ exec execstr
 endfunction
 ]]
 
--------------------------------------
+-------------------------------------}}}
 
 vim.api.nvim_set_hl(0, 'FloatBorder', { link = 'Normal' })
 vim.api.nvim_set_hl(0, 'NormalFloat', { link = 'Normal' })
 vim.api.nvim_set_hl(0, 'LspInlayHint', { link = 'Comment' })
 
--------------------------------------
+-------------------------------{{{ Neovide
 
-vim.o.guifont = "Iosevka Nerd Font Mono:h11"
+-- vim.o.guifont = "Iosevka NFP Medium:h11"
 -- vim.o.guifont = "CaskaydiaCove NFM SemiLight:h9"
+vim.o.guifont = "CaskaydiaCove NFP:h9"
+-- vim.o.guifont = "Source Code Pro Medium:h11"
 function NeovideFullscreen()
     if vim.g.neovide_fullscreen == true then
         vim.g.neovide_fullscreen = false
@@ -857,7 +884,7 @@ function NeovideFullscreen()
         vim.g.neovide_fullscreen = true
     end
 end
-
+vim.g.neovide_scroll_animation_length = 0
 vim.g.neovide_cursor_animation_length = 0
 vim.g.neovide_cursor_trail_size = 0
 vim.g.neovide_cursor_vfx_mode = ""
@@ -868,3 +895,4 @@ wk.register({
 }, {
     mode = { "i", "n", "v", "t" }
 })
+---}}}
