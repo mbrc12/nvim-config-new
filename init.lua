@@ -1,6 +1,7 @@
-local dark_colorscheme = "nightly"
+-- local dark_colorscheme = "nightly"
+local dark_colorscheme = "nightfox"
 local light_colorscheme = "github_light"
-local colorscheme = dark_colorscheme
+local colorscheme = light_colorscheme
 
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
 if not vim.loop.fs_stat(lazypath) then
@@ -100,7 +101,6 @@ local plugins = {
         "nvim-telescope/telescope.nvim",
         config = function()
             require("telescope").setup {
-
             }
         end
     },
@@ -110,6 +110,14 @@ local plugins = {
         dependencies = {"nvim-telescope/telescope.nvim"},
         config = function ()
             require("telescope").load_extension("ui-select")
+        end
+    },
+
+    {
+        "nvim-telescope/telescope-dap.nvim",
+        dependencies = {"nvim-telescope/telescope.nvim"},
+        config = function ()
+            require("telescope").load_extension("dap")       
         end
     },
 
@@ -179,6 +187,24 @@ local plugins = {
         config = function()
             require("github-theme").setup {}
         end
+    },
+
+    {
+        "catppuccin/nvim",
+        name = "catppuccin",
+        priority = 1000
+    },
+
+    {
+        'uloco/bluloco.nvim',
+        lazy = false,
+        priority = 1000,
+        dependencies = { 'rktjmp/lush.nvim' },
+        config = function()
+            require("bluloco").setup {
+                italics = true
+            }
+        end,
     },
 
     {
@@ -299,7 +325,7 @@ local plugins = {
         dependencies = { 'nvim-tree/nvim-web-devicons' },
         config = function()
             require"bufferline".setup {
-                auto_hide = true,
+                auto_hide = false,
                 insert_at_end = true,
                 icons = {
                     button = '❌'
@@ -309,7 +335,9 @@ local plugins = {
             local wk = require("which-key")
 
             for i = 1,10 do
-                wk.register({ ['<M-' .. i .. '>'] = { '<Cmd>BufferGoto ' .. i .. '<CR>', "Change tabs" } })
+                wk.register({ ['<M-' .. i .. '>'] = 
+                    { '<Cmd>BufferGoto ' .. i .. '<CR>', "Change tabs" } },
+                    {mode = {"t", "n"}})
             end
 
             wk.register({ ['<C-q>'] = { '<Cmd>BufferClose<CR>', "Close buffer" }})
@@ -518,6 +546,30 @@ local plugins = {
         "mfussenegger/nvim-jdtls",
     },
 
+    -- Debug
+    {
+        "mfussenegger/nvim-dap",
+        config = function ()
+            local dap = require("dap")
+            local wk = require("which-key")
+
+            wk.register({
+                ["b"] = { dap.toggle_breakpoint, "Toggle breakpoint for DAP" },
+                ["c"] = { dap.continue, "Continue in DAP" },
+                ["s"] = { dap.step_over, "Step in DAP" } ,
+                ["<F5>"] = { dap.repl_open, "Repl for DAP" }
+            }, {
+                prefix = "<leader>"
+            })
+
+        end
+    },
+
+    {
+        "jay-babu/mason-nvim-dap.nvim",
+        dependencies = { "williamboman/mason.nvim", "mfussenegger/nvim-dap" },
+    },
+
     -- LaTeX
 
     {
@@ -565,6 +617,14 @@ lsp.skip_server_setup({'jdtls'})
 require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
 
 lsp.setup()
+
+
+--- Setup DAP --------------------
+
+require("mason-nvim-dap").setup {}
+
+--- Setup CMP ---------------------
+
 
 local cmp = require('cmp')
 local cmp_action = require('lsp-zero').cmp_action()
@@ -705,6 +765,11 @@ wk.register({
         end, "Set dark colorscheme"
     },
 })
+wk.register({
+    ["<C-s>"] = { "<Esc>:w<CR>", "Save"},
+}, {
+    mode = 'i'
+})
 ------ Telescope ------------------
 
 local menu = require("nui.menu")
@@ -753,6 +818,11 @@ Telescope_Menu = menu({
 })
 
 wk.register({ ["<F2>"] =  { ":lua Telescope_Menu:mount()<CR>", "LSP actions" }})
+wk.register({
+    ["ff"] = { "<cmd>Telescope find_files<CR>", "Find files" }
+}, {
+    prefix = "<leader>"
+})
 
 ----- VimTeX settings --------------
 
@@ -775,3 +845,26 @@ endfunction
 vim.api.nvim_set_hl(0, 'FloatBorder', { link = 'Normal' })
 vim.api.nvim_set_hl(0, 'NormalFloat', { link = 'Normal' })
 vim.api.nvim_set_hl(0, 'LspInlayHint', { link = 'Comment' })
+
+-------------------------------------
+
+vim.o.guifont = "Iosevka Nerd Font Mono:h11"
+-- vim.o.guifont = "CaskaydiaCove NFM SemiLight:h9"
+function NeovideFullscreen()
+    if vim.g.neovide_fullscreen == true then
+        vim.g.neovide_fullscreen = false
+    else
+        vim.g.neovide_fullscreen = true
+    end
+end
+
+vim.g.neovide_cursor_animation_length = 0
+vim.g.neovide_cursor_trail_size = 0
+vim.g.neovide_cursor_vfx_mode = ""
+vim.g.neovide_cursor_vfx_particle_density = 20.0
+
+wk.register({
+    ["<F11>"] = { NeovideFullscreen, "Toggle fullscreen in neovide" }
+}, {
+    mode = { "i", "n", "v", "t" }
+})
