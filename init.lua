@@ -347,6 +347,11 @@ local plugins = {
             end
 
             wk.register({ ['<C-q>'] = { '<Cmd>BufferClose<CR>', "Close buffer" }})
+
+            wk.register({
+                ["<C->>"] = { "<Cmd>BufferMoveNext<CR>", "Buffer move to next" },
+                ["<C-<>"] = { "<Cmd>BufferMovePrevious<CR>", "Buffer move to previous" }
+            })
         end
     }, --barbar
 
@@ -619,12 +624,21 @@ lsp.on_attach(function(client, bufnr)
     client.server_capabilities.semanticTokensProvider = nil
     require("lsp-inlayhints").on_attach(client, bufnr)
 end)
-
+lsp.skip_server_setup({'tsserver'})
+lsp.skip_server_setup({'jedi_language_server'})
 lsp.skip_server_setup({'rust_analyzer'})
 lsp.skip_server_setup({'jdtls'})
 
 -- (Optional) Configure lua language server for neovim
 require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
+
+require('lspconfig').tsserver.setup({
+    root_dir = require('lspconfig.util').root_pattern('.git')
+})
+
+require('lspconfig').jedi_language_server.setup({
+    root_dir = require('lspconfig.util').root_pattern('.git')
+})
 
 lsp.setup()
 
@@ -874,9 +888,9 @@ vim.api.nvim_set_hl(0, 'LspInlayHint', { link = 'Comment' })
 -------------------------------{{{ Neovide
 
 -- vim.o.guifont = "Iosevka NFP Medium:h11"
--- vim.o.guifont = "CaskaydiaCove NFM SemiLight:h9"
-vim.o.guifont = "CaskaydiaCove NFP:h9"
--- vim.o.guifont = "Source Code Pro Medium:h11"
+-- vim.o.guifont = "CaskaydiaCove NFP SemiLight:h9"
+vim.o.guifont = "CaskaydiaCove NFM:h9"
+-- vim.o.guifont = "League Mono:h11"
 function NeovideFullscreen()
     if vim.g.neovide_fullscreen == true then
         vim.g.neovide_fullscreen = false
