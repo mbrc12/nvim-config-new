@@ -1,6 +1,6 @@
 -- local dark_colorscheme = "nightly"
-local dark_colorscheme = "nightfox"
-local light_colorscheme = "github_light"
+local dark_colorscheme = {"nightfox", "dark"}
+local light_colorscheme = {"dayfox", "light"}
 local colorscheme = light_colorscheme
 
 ---{{{ Lazy
@@ -179,6 +179,10 @@ local plugins = {
     "rebelot/kanagawa.nvim",
 
     {
+        "lunacookies/vim-colors-xcode"
+    },
+
+    {
         "Shatur/neovim-ayu",
         config = function ()
             require('ayu').setup {
@@ -225,6 +229,10 @@ local plugins = {
         config = function ()
             require("nightly").setup {}
         end
+    },
+
+    {
+        "savq/melange-nvim",
     },
 
     -- Explorer
@@ -406,6 +414,13 @@ local plugins = {
         end
     }, -- lualine 
 
+    {
+        "andweeb/presence.nvim",
+        config = function ()
+            require("presence").setup {}
+        end
+    },
+
     -- General utils for coding
     {
         'tpope/vim-commentary',
@@ -422,6 +437,7 @@ local plugins = {
                 mode = 'v',
                 noremap = false
             })
+            vim.cmd[[autocmd FileType glsl setlocal commentstring=\/\/\ %s]]
         end
     },
 
@@ -560,6 +576,10 @@ local plugins = {
         "mfussenegger/nvim-jdtls",
     },
 
+    {
+        "tikhomirov/vim-glsl"
+    },
+
     -- Debug
     {
         "mfussenegger/nvim-dap",
@@ -603,7 +623,8 @@ local plugins = {
 ---}}}
 
 require('lazy').setup(plugins, {})
-vim.cmd("colorscheme " .. colorscheme)
+vim.cmd("colorscheme " .. colorscheme[1])
+vim.o.background = colorscheme[2]
 
 
 ------------ Setup LSP ---------------------- {{{
@@ -791,13 +812,13 @@ wk.register({
     ["<F9>"] = {
         function()
             vim.o.background = "light"
-            vim.cmd("colorscheme " .. light_colorscheme)
+            vim.cmd("colorscheme " .. light_colorscheme[1])
         end, "Set light colorscheme"
     },
     ["<F10>"] = {
         function()
             vim.o.background = "dark"
-            vim.cmd("colorscheme " .. dark_colorscheme)
+            vim.cmd("colorscheme " .. dark_colorscheme[1])
         end, "Set dark colorscheme"
     },
 })
@@ -889,8 +910,9 @@ vim.api.nvim_set_hl(0, 'LspInlayHint', { link = 'Comment' })
 
 -- vim.o.guifont = "Iosevka NFP Medium:h11"
 -- vim.o.guifont = "CaskaydiaCove NFP SemiLight:h9"
-vim.o.guifont = "CaskaydiaCove NFM:h9"
+-- vim.o.guifont = "Hermit:h9"
 -- vim.o.guifont = "League Mono:h11"
+vim.o.guifont = "FiraCode Nerd Font Med:h9"
 function NeovideFullscreen()
     if vim.g.neovide_fullscreen == true then
         vim.g.neovide_fullscreen = false
