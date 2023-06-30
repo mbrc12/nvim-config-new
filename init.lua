@@ -200,6 +200,10 @@ local plugins = {
     },
 
     {
+        "ellisonleao/gruvbox.nvim"
+    },
+
+    {
         "catppuccin/nvim",
         name = "catppuccin",
         priority = 1000
@@ -626,7 +630,6 @@ require('lazy').setup(plugins, {})
 vim.cmd("colorscheme " .. colorscheme[1])
 vim.o.background = colorscheme[2]
 
-
 ------------ Setup LSP ---------------------- {{{
 require("mason").setup()
 require("mason-lspconfig").setup({
@@ -788,13 +791,15 @@ wk.register({
     ec = { ":e ~/.config/nvim/init.lua<CR>", "Open config" },
     ["/"] = { ":terminal<CR>", "Open terminal" }
 }, {
-    prefix = "<leader>"
+    prefix = "<leader>",
+    mode = "n"
 })
 
 wk.register({
     ["1"] = { ".", "Dot operator" }
 }, {
-    noremap = false
+    noremap = false,
+    mode = "n"
 })
 
 wk.register({
@@ -802,7 +807,8 @@ wk.register({
     E = { vim.diagnostic.open_float, "Line diagnostics" },
     R = { vim.lsp.buf.rename, "Rename" }
 }, {
-    prefix = "Q"
+    prefix = "Q",
+    mode = "n"
 })
 
 wk.register({
@@ -821,6 +827,8 @@ wk.register({
             vim.cmd("colorscheme " .. dark_colorscheme[1])
         end, "Set dark colorscheme"
     },
+}, {
+    mode = "n"
 })
 wk.register({
     ["<C-s>"] = { "<Esc>:w<CR>", "Save"},
@@ -909,10 +917,10 @@ vim.api.nvim_set_hl(0, 'LspInlayHint', { link = 'Comment' })
 -------------------------------{{{ Neovide
 
 -- vim.o.guifont = "Iosevka NFP Medium:h11"
--- vim.o.guifont = "CaskaydiaCove NFP SemiLight:h9"
+vim.o.guifont = "CaskaydiaCove NFP:h11.5"
 -- vim.o.guifont = "Hermit:h9"
 -- vim.o.guifont = "League Mono:h11"
-vim.o.guifont = "FiraCode Nerd Font Med:h9"
+-- vim.o.guifont = "FiraCode Nerd Font Med:h9"
 function NeovideFullscreen()
     if vim.g.neovide_fullscreen == true then
         vim.g.neovide_fullscreen = false
