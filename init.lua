@@ -1,7 +1,7 @@
 -- local dark_colorscheme = "nightly"
-local dark_colorscheme = {"nightfox", "dark"}
+local dark_colorscheme = {"duskfox", "dark"}
 local light_colorscheme = {"dayfox", "light"}
-local colorscheme = light_colorscheme
+local colorscheme = dark_colorscheme
 
 ---{{{ Lazy
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -99,6 +99,9 @@ local plugins = {
                     enable = true,
                     additional_vim_regex_highlighting = false,
                 },
+                indent = {
+                    enable = false
+                }
             }
         end
     },
@@ -566,7 +569,7 @@ local plugins = {
                     on_attach = function(_, bufnr)
                         local wk = require("which-key")
                         wk.register({
-                            K = { "<cmd>RustHoverActions<CR>", "Hover actions for Rust" }
+                            ["<F1>"] = { "<cmd>RustHoverActions<CR>", "Hover actions for Rust" }
                         }, {
                             buffer = bufnr
                         })
@@ -639,7 +642,9 @@ require("mason-lspconfig").setup({
 local lsp = require('lsp-zero').preset({})
 
 lsp.on_attach(function(client, bufnr)
-    lsp.default_keymaps({buffer = bufnr})
+    lsp.default_keymaps({
+        buffer = bufnr,
+    })
 
     if client.server_capabilities.documentSymbolProvider then
         require("nvim-navic").attach(client, bufnr)
@@ -647,6 +652,11 @@ lsp.on_attach(function(client, bufnr)
     -- nvim_tree_on_attach(bufnr)
     client.server_capabilities.semanticTokensProvider = nil
     require("lsp-inlayhints").on_attach(client, bufnr)
+
+    local wk = require("which-key")
+    wk.register({
+        ["<F1>"] = {vim.lsp.buf.hover, " LSP hover "}
+    })
 end)
 lsp.skip_server_setup({'tsserver'})
 lsp.skip_server_setup({'jedi_language_server'})
@@ -885,6 +895,8 @@ Telescope_Menu = menu({
 })
 
 wk.register({ ["<F2>"] =  { ":lua Telescope_Menu:mount()<CR>", "LSP actions" }})
+wk.register({ ["<F3>"] =  { "<cmd>Telescope lsp_document_symbols<CR>", "LSP symbols"} })
+wk.register({ ["<F12>"] = { "<cmd>Telescope resume<CR>", "Resume last telescope" } })
 wk.register({
     ["ff"] = { "<cmd>Telescope find_files<CR>", "Find files" }
 }, {
@@ -917,10 +929,11 @@ vim.api.nvim_set_hl(0, 'LspInlayHint', { link = 'Comment' })
 -------------------------------{{{ Neovide
 
 -- vim.o.guifont = "Iosevka NFP Medium:h11"
-vim.o.guifont = "CaskaydiaCove NFP:h11.5"
+vim.o.guifont = "Iosevka NFM:h9.5"
 -- vim.o.guifont = "Hermit:h9"
 -- vim.o.guifont = "League Mono:h11"
 -- vim.o.guifont = "FiraCode Nerd Font Med:h9"
+
 function NeovideFullscreen()
     if vim.g.neovide_fullscreen == true then
         vim.g.neovide_fullscreen = false
