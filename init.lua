@@ -662,6 +662,7 @@ lsp.skip_server_setup({'tsserver'})
 lsp.skip_server_setup({'jedi_language_server'})
 lsp.skip_server_setup({'rust_analyzer'})
 lsp.skip_server_setup({'jdtls'})
+lsp.skip_server_setup({'zls'})
 
 -- (Optional) Configure lua language server for neovim
 require('lspconfig').lua_ls.setup(lsp.nvim_lua_ls())
@@ -672,6 +673,12 @@ require('lspconfig').tsserver.setup({
 
 require('lspconfig').jedi_language_server.setup({
     root_dir = require('lspconfig.util').root_pattern('.git')
+})
+
+require('lspconfig').zls.setup({
+    settings = {
+        enable_snippets = false
+    }
 })
 
 lsp.setup()
