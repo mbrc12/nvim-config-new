@@ -1,0 +1,56 @@
+{
+  "suggest.noselect": true,
+  "suggest.labelMaxLength": 80,
+  "suggest.floatConfig": {
+    "border": true,
+    "rounded": true
+  },
+  "suggest.pumFloatConfig": {
+    "border": true,
+    "rounded": true
+  },
+  "hover.floatConfig": {
+    "border": true,
+    "rounded": true
+  },
+  "signature.floatConfig": {
+    "border": true,
+    "rounded": true
+  },
+  "diagnostic.floatConfig": {
+    "border": true,
+    "rounded": true
+  },
+  "languageserver": {
+    "ccls": {
+      "command": "ccls",
+      "filetypes": ["c", "cc", "cpp", "c++", "objc", "objcpp", "hpp", "h"],
+      "rootPatterns": [".ccls", "compile_commands.json", ".git/"],
+      "initializationOptions": {
+        "compilationDatabaseDirectory": "build",
+        "cache": {
+          "directory": "/tmp/ccls"
+        }
+      }
+    },
+
+    "digestif": {
+      "command": "digestif",
+      "filetypes": ["tex", "plaintex", "context", "latex"]
+    },
+
+    "csharp-ls": {
+      "command": "csharp-ls",
+      "filetypes": ["cs", "razor"],
+      "rootPatterns": ["*.csproj", ".vim/", ".git/"]
+    },
+
+
+    "elvish": {
+      "command": "elvish",
+      "args": ["-lsp"],
+      "filetypes": ["elvish"]
+    }
+  },
+  "snippets.ultisnips.pythonPrompt": false,
+}
