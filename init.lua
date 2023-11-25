@@ -99,13 +99,6 @@ local plugins = {
         'fannheyward/telescope-coc.nvim'
     },
 
-    -- {
-    --     "startup-nvim/startup.nvim",
-    --     dependencies = {"nvim-telescope/telescope.nvim", "nvim-lua/plenary.nvim"},
-    --     config = function()
-    --         require"startup".setup()
-    --     end
-    -- },
 
     {
         'mhinz/vim-startify'
@@ -296,12 +289,6 @@ local plugins = {
         end
     },
 
-    -- {
-    --     "norcalli/nvim-colorizer.lua",
-    --     config = function()
-    --         require("colorizer").setup()
-    --     end
-    -- },
 
     {
         'romgrk/barbar.nvim',
@@ -364,38 +351,11 @@ local plugins = {
                     lualine_y = {},
                     lualine_z = {}
                 },
-                --
-                -- winbar = {
-                --     lualine_a = {},
-                --     lualine_b = { LualinePlugins.navic_component },
-                --     lualine_c = {},
-                --     lualine_x = { 'diagnostics' },
-                --     lualine_y = { 'coc#status', 'b:coc_current_function' },
-                --     lualine_z = { LualinePlugins.current_time }
-                -- },
-                -- inactive_winbar = {
-                --     lualine_a = {},
-                --     lualine_b = {},
-                --     lualine_c = {},
-                --     lualine_x = {},
-                --     lualine_y = {},
-                --     lualine_z = {}
-                -- }
+
             }
         end
     }, -- lualine
 
-    -- {
-    --     "adelarsq/neoline.vim",
-    --     config = function()
-    --         -- vim.g.neoline_disable_statusline=1
-    --     end
-    -- },
-    
-    -- {
-    --     'bluz71/nvim-linefly',
-    --     lazy = false
-    -- },
 
     {
         "andweeb/presence.nvim",
@@ -430,13 +390,6 @@ local plugins = {
         end
     },
 
-    -- 'jiangmiao/auto-pairs',
-
-    -- {
-    --     'windwp/nvim-autopairs',
-    --     event = "InsertEnter",
-    --     opts = {} -- this is equalent to setup({}) function
-    -- },
 
     -- LSP
 
@@ -491,16 +444,6 @@ vim.o.background = colorscheme[2]
 
 local wk = require("which-key")
 local highlight = vim.api.nvim_set_hl
-
--- ---{{{ Linefly
--- function LineflyConfig()
---     highlight(0, "LineflyNormal", { link = "TSVariable" })
---     highlight(0, "LineflyInsert", { link = "TSVariable" })
---     highlight(0, "LineflyVisual", { link = "TSField" })
---     highlight(0, "LineflyCommand", { link = "WildMenu" })
---     highlight(0, "LineflyReplace", { link = "ErrorMsg" })
--- end
--- ---}}}
 
 --- {{{ Dap 
 function DapConfig()
@@ -754,7 +697,6 @@ end
 
 function Configuration()
     DapConfig()
-    -- LineflyConfig()
     TelescopeConfig()
     VimtexConfig()
     CoCConfig()
