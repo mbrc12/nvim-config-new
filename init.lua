@@ -1,9 +1,12 @@
 -- local dark_colorscheme = "nightly"
 -- local dark_colorscheme = { "monokai-pro-spectrum", "dark" }
-local dark_colorscheme = { "rose-pine", "dark" }
--- local dark_colorscheme = { "biscuit", "dark" }
--- local light_colorscheme = { "dayfox", "light" }
+ -- local dark_colorscheme = { "darkblue", "dark" }
+-- local dark_colorscheme = { "noctis", "dark" }
+local dark_colorscheme = { "biscuit", "dark" }
+local light_colorscheme = { "dayfox", "light" }
 local colorscheme = dark_colorscheme
+
+_G.CurrentStatus = ""
 
 ---{{{ Lazy
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -51,36 +54,6 @@ vim.o.clipboard = "unnamedplus"
 -- vim.o.signcolumn="number"
 vim.o.cmdheight = 1
 vim.o.autoread = true
----}}}
-
----{{{ Lualine
-LualinePlugins = {
-    navic_component = function()
-        local navic = require("nvim-navic")
-        if navic.is_available() then
-            return navic.get_location()
-        else
-            return " ## "
-        end
-    end,
-    lsp_clients = function()
-        local lsps = vim.lsp.get_active_clients({ bufnr = vim.fn.bufnr() })
-        if #lsps == 0 then
-            return "##"
-        end
-        local str = ""
-        for key, value in pairs(lsps) do
-            str = str .. " " .. value.name
-            if key < #lsps then
-                str = str .. " /"
-            end
-        end
-        return str
-    end,
-    current_time = function()
-        return os.date("%H:%M")
-    end
-}
 ---}}}
 
 ---{{{ Plugins
@@ -178,6 +151,13 @@ local plugins = {
 
     {
         'rose-pine/neovim', name = 'rose-pine'
+    },
+
+    {
+        'kartikp10/noctis.nvim', name = 'noctis',
+        dependencies = {
+            'rktjmp/lush.nvim'
+        }
     },
 
     {
@@ -372,7 +352,7 @@ local plugins = {
                     lualine_a = { 'mode' },
                     lualine_b = { 'branch', 'diff' },
                     lualine_c = { 'filename' },
-                    lualine_x = { 'encoding', 'fileformat', function() return vim.pesc(vim.g.coc_status or '') end, 'filetype' },
+                    lualine_x = { 'encoding', 'fileformat', '', 'filetype' },
                     lualine_y = { 'progress' },
                     lualine_z = { 'location' }
                 },
@@ -404,6 +384,18 @@ local plugins = {
             }
         end
     }, -- lualine
+
+    -- {
+    --     "adelarsq/neoline.vim",
+    --     config = function()
+    --         -- vim.g.neoline_disable_statusline=1
+    --     end
+    -- },
+    
+    -- {
+    --     'bluz71/nvim-linefly',
+    --     lazy = false
+    -- },
 
     {
         "andweeb/presence.nvim",
@@ -493,168 +485,288 @@ local plugins = {
 }
 ---}}}
 
-require('lazy').setup(plugins, {})
+require("lazy").setup(plugins, {})
 vim.cmd("colorscheme " .. colorscheme[1])
 vim.o.background = colorscheme[2]
 
 local wk = require("which-key")
-------- Debugging with DAP {{{
-local dap = require("dap")
+local highlight = vim.api.nvim_set_hl
 
-dap.adapters.coreclr = {
-    type = 'executable',
-    command = '/usr/bin/netcoredbg',
-    args = { '--interpreter=vscode' }
-}
+-- ---{{{ Linefly
+-- function LineflyConfig()
+--     highlight(0, "LineflyNormal", { link = "TSVariable" })
+--     highlight(0, "LineflyInsert", { link = "TSVariable" })
+--     highlight(0, "LineflyVisual", { link = "TSField" })
+--     highlight(0, "LineflyCommand", { link = "WildMenu" })
+--     highlight(0, "LineflyReplace", { link = "ErrorMsg" })
+-- end
+-- ---}}}
 
-dap.configurations.cs = {
-    {
-        type = "coreclr",
-        name = "launch - netcoredbg",
-        request = "launch",
-        program = function()
-            return vim.fn.input('Path to dll', vim.fn.getcwd() .. '/bin/Debug/', 'file')
+--- {{{ Dap 
+function DapConfig()
+    local dap = require("dap")
+
+    dap.adapters.coreclr = {
+        type = 'executable',
+        command = '/usr/bin/netcoredbg',
+        args = { '--interpreter=vscode' }
+    }
+
+    dap.configurations.cs = {
+        {
+            type = "coreclr",
+            name = "launch - netcoredbg",
+            request = "launch",
+            program = function()
+                return vim.fn.input('Path to dll', vim.fn.getcwd() .. '/bin/Debug/', 'file')
+            end,
+        },
+    }
+
+    require("dapui").setup()
+    wk.register({
+        ["=?"] = { require("dapui").toggle, "Toggle dapui" },
+        ["=/"] = { ":DapContinue<CR>", "Start Dap" }
+    }, {
+        prefix = "<leader>",
+        mode = "n"
+    })
+end
+
+---}}}
+
+---{{{ Generic Keybinds 
+function GenericKeybindsConfig()
+    wk.register({
+        ["ec"] = { ":e ~/.config/nvim/init.lua<cr>", "Open config" }
+    }, {
+        prefix = "<leader>",
+        mode = "n",
+    })
+
+    wk.register({
+        ["<C-n><C-n>"] = { ":noh<cr>", "No highlights" },
+        ["<C-s>"] = { ":w<cr>", "Save" }
+    }, {
+        mode = 'n'
+    })
+
+    wk.register({
+        ["<C-s>"] = { "<esc>:w<cr>i", "Save" }
+    }, {
+        mode = { 'i' },
+    })
+
+    wk.register({
+        ["'x"] = { [["_x]], "Cut without saving" }
+    }, {
+        mode = "v",
+        noremap = true
+    })
+
+    wk.register({
+        ["'dd"] = { [["_dd]], "Cut without saving" }
+    }, {
+        mode = "n",
+        noremap = true
+    })
+end
+
+---}}}
+
+--- {{{ Telescope
+function TelescopeConfig()
+    require("telescope").setup({
+        extensions = {
+            coc = {
+                theme = 'ivy',
+                prefer_locations = true, -- always use Telescope locations to preview definitions/declarations/implementations etc
+            },
+            builtin = {
+                theme = 'ivy'
+            },
+        },
+    })
+    require('telescope').load_extension('coc')
+
+    local menu = require("nui.menu")
+
+    local telescope_actions = {
+        { text = "Jump to definition",      cmd = "coc declarations" },
+        -- { text = "Show calls to this", cmd = "lsp_incoming_calls" },
+        { text = "Show references to this", cmd = "coc references" },
+        { text = "Show workspace issues",   cmd = "coc workspace_diagnostics" },
+        { text = "Live grep",               cmd = "live_grep" },
+    }
+
+    Telescope_Menu = menu({
+        position = "50%",
+        border = {
+            style = "single",
+            text = {
+                top = "Telescope actions",
+                top_align = "center"
+            },
+        },
+        win_options = {
+            winhighlight = "Normal:Normal"
+        },
+    }, {
+        lines = (function()
+            local lines = {}
+            for k, v in ipairs(telescope_actions) do
+                lines[#lines + 1] = menu.item("" .. k .. ". " .. v.text, v)
+            end
+            return lines
+        end)(),
+        min_width = 40,
+        keymap = {
+            focus_next = { "<Down>" },
+            focus_prev = { "<Up>" },
+            close = { "<Esc>", "q" },
+            submit = { "<CR>" }
+        },
+        on_close = function()
         end,
-    },
-}
-
-require("dapui").setup()
-wk.register({
-    ["=?"] = { require("dapui").toggle, "Toggle dapui" },
-    ["=/"] = { ":DapContinue<CR>", "Start Dap" }
-}, {
-    prefix = "<leader>",
-    mode = "n"
-})
-
---}}}
-
------ Generic keybindings ---------- {{{
-
-wk.register({
-    ["ec"] = { ":e ~/.config/nvim/init.lua<cr>", "Open config" }
-}, {
-    prefix = "<leader>",
-    mode = "n",
-})
-
-wk.register({
-    ["<C-n><C-n>"] = { ":noh<cr>", "No highlights" },
-    ["<C-s>"] = { ":w<cr>", "Save" }
-}, {
-    mode = 'n'
-})
-
-wk.register({
-    ["<C-s>"] = { "<esc>:w<cr>i", "Save" }
-}, {
-    mode = { 'i' },
-})
-
---}}}
-
------- Telescope ------------------{{{
-
-require("telescope").setup({
-    extensions = {
-        coc = {
-            theme = 'ivy',
-            prefer_locations = true, -- always use Telescope locations to preview definitions/declarations/implementations etc
-        },
-        builtin = {
-            theme = 'ivy'
-        },
-    },
-})
-require('telescope').load_extension('coc')
-
-local menu = require("nui.menu")
-
-local telescope_actions = {
-    { text = "Jump to definition",      cmd = "coc declarations" },
-    -- { text = "Show calls to this", cmd = "lsp_incoming_calls" },
-    { text = "Show references to this", cmd = "coc references" },
-    { text = "Show workspace issues",   cmd = "coc workspace_diagnostics" },
-    { text = "Live grep",               cmd = "live_grep" },
-}
-
-Telescope_Menu = menu({
-    position = "50%",
-    border = {
-        style = "single",
-        text = {
-            top = "Telescope actions",
-            top_align = "center"
-        },
-    },
-    win_options = {
-        winhighlight = "Normal:Normal"
-    },
-}, {
-    lines = (function()
-        local lines = {}
-        for k, v in ipairs(telescope_actions) do
-            lines[#lines + 1] = menu.item("" .. k .. ". " .. v.text, v)
+        on_submit = function(item)
+            print(item.cmd)
+            vim.cmd(":Telescope " .. item.cmd)
         end
-        return lines
-    end)(),
-    min_width = 40,
-    keymap = {
-        focus_next = { "<Down>" },
-        focus_prev = { "<Up>" },
-        close = { "<Esc>", "q" },
-        submit = { "<CR>" }
-    },
-    on_close = function()
-    end,
-    on_submit = function(item)
-        print(item.cmd)
-        vim.cmd(":Telescope " .. item.cmd)
+    })
+
+
+    wk.register({
+        ["=="] = { ":Telescope coc commands<CR>", "CoC commands" }
+    }, {
+        prefix = "<leader>",
+        mode = "n"
+    })
+
+    wk.register({ ["<F2>"] = { ":lua Telescope_Menu:mount()<CR>", "LSP actions" } })
+    wk.register({ ["<F3>"] = { "<cmd>Telescope coc document_symbols<CR>", "LSP symbols" } })
+    wk.register({ ["<F12>"] = { "<cmd>Telescope resume<CR>", "Resume last telescope" } })
+    wk.register({
+        ["f"] = { "<cmd>Telescope find_files<CR>", "Find files" },
+        ["/"] = { "<cmd>Telescope live_grep<CR>", "Grep in files" }
+    }, {
+        prefix = "<leader>"
+    })
+
+    vim.cmd([[autocmd User TelescopePreviewerLoaded setlocal wrap]])
+
+end
+---}}}
+
+--- {{{ Vimtex
+
+function VimtexConfig()
+    wk.register({
+        t = { '<cmd>:VimtexCompile<CR>', "Vimtex Compile" },
+        v = { '<cmd>:VimtexView<CR>', "Vimtex View" }
+    }, {
+        prefix = "<leader>t"
+    })
+
+    vim.cmd [[
+    function! Synctex()
+            " remove 'silent' for debugging
+            execute "silent !zathura --synctex-forward " . line('.') . ":" . col('.') . ":" . bufname('%') . " " . g:syncpdf
+    endfunction
+    ]]
+end
+
+---}}}
+
+--- {{{ CoC 
+function CoCConfig()
+    function _G.check_back_space()
+        local col = vim.fn.col('.') - 1
+        return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
     end
-})
+
+    function _G.show_docs()
+        local cw = vim.fn.expand('<cword>')
+        if vim.fn.index({ 'vim', 'help' }, vim.bo.filetype) >= 0 then
+            vim.api.nvim_command('h ' .. cw)
+        elseif vim.api.nvim_eval('coc#rpc#ready()') then
+            vim.fn.CocActionAsync('doHover')
+        else
+            vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
+        end
+    end
+
+    local opts = { noremap = true, expr = true, replace_keycodes = false }
+    vim.keymap.set("i", "<tab>", [[coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()]],
+    opts)
+    vim.keymap.set("i", "<s-tab>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
+    -- vim.keymap.set("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
+    vim.keymap.set("i", "<CR>",
+        function()
+            if vim.fn['coc#pum#visible']() == 1 then
+                return vim.fn['coc#pum#confirm']()
+            else
+                return "\r"
+            end
+        end,
+    opts)
+
+    wk.register({
+        ["<a-cr>"] = { [[<Plug>(coc-snippets-expand)]] , "Expand snippet" },
+        {
+            mode = 'i',
+            silent = true
+        }
+    })
+
+    wk.register({
+        ["K"] = { '<cmd>lua _G.show_docs()<CR>', "Show docs" },
+        ["gd"] = { '<Plug>(coc-definition)', "Goto definition" },
+        ["QQ"] = { '<Plug>(coc-codeaction-cursor)', "Code actions" },
+        ["QE"] = { ':Telescope coc diagnostics<CR>', "Errors" }
+    }, {
+        mode = 'n',
+        silent = true
+    })
 
 
-wk.register({
-    ["=="] = { ":Telescope coc commands<CR>", "CoC commands" }
-}, {
-    prefix = "<leader>",
-    mode = "n"
-})
+    wk.register({
+        ["oo"] = { [[:call CocAction('organizeImport')<cr>]], "Organize imports" }
+    }, {
+        prefix = "<leader>",
+        mode = 'n',
+        -- silent = true
+    })
 
-wk.register({ ["<F2>"] = { ":lua Telescope_Menu:mount()<CR>", "LSP actions" } })
-wk.register({ ["<F3>"] = { "<cmd>Telescope coc document_symbols<CR>", "LSP symbols" } })
-wk.register({ ["<F12>"] = { "<cmd>Telescope resume<CR>", "Resume last telescope" } })
-wk.register({
-    ["ff"] = { "<cmd>Telescope find_files<CR>", "Find files" },
-    ["/"] = { "<cmd>Telescope live_grep<CR>", "Grep in files" }
-}, {
-    prefix = "<leader>"
-})
+    wk.register({
+        ["??"] = { '<Plug>(coc-format-selected)', "Format" },
+    }, {
+        mode = 'v',
+        silent = true
+    })
+end
+--- }}}
 
-vim.cmd([[autocmd User TelescopePreviewerLoaded setlocal wrap]])
---}}}
+function Configuration()
+    DapConfig()
+    -- LineflyConfig()
+    TelescopeConfig()
+    VimtexConfig()
+    CoCConfig()
+    GenericKeybindsConfig()
 
------ VimTeX settings -------------- {{{
+    highlight(0, 'FloatBorder', { link = 'Normal' })
+    highlight(0, 'NormalFloat', { link = 'Normal' })
+    highlight(0, 'LspInlayHint', { link = 'Comment' })
 
-wk.register({
-    t = { '<cmd>:VimtexCompile<CR>', "Vimtex Compile" },
-    v = { '<cmd>:VimtexView<CR>', "Vimtex View" }
-}, {
-    prefix = "<leader>t"
-})
-
-vim.cmd [[
-function! Synctex()
-        " remove 'silent' for debugging
-        execute "silent !zathura --synctex-forward " . line('.') . ":" . col('.') . ":" . bufname('%') . " " . g:syncpdf
-endfunction
-]]
-
--------------------------------------}}}
-
-vim.api.nvim_set_hl(0, 'FloatBorder', { link = 'Normal' })
-vim.api.nvim_set_hl(0, 'NormalFloat', { link = 'Normal' })
-vim.api.nvim_set_hl(0, 'LspInlayHint', { link = 'Comment' })
+    vim.api.nvim_create_autocmd("User", {
+        pattern = "CocStatusChange",
+        callback = function()
+            local status = vim.call("coc#status")
+            _G.CurrentStatus = status
+            print(status)
+        end
+    })
+end
 
 -------------------------------{{{ Neovide
 
@@ -684,79 +796,3 @@ wk.register({
     mode = { "i", "n", "v", "t" }
 })
 ---}}}
-
-------- Coc Keybindings ------------ {{{
-
-function _G.check_back_space()
-    local col = vim.fn.col('.') - 1
-    return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
-end
-
-function _G.show_docs()
-    local cw = vim.fn.expand('<cword>')
-    if vim.fn.index({ 'vim', 'help' }, vim.bo.filetype) >= 0 then
-        vim.api.nvim_command('h ' .. cw)
-    elseif vim.api.nvim_eval('coc#rpc#ready()') then
-        vim.fn.CocActionAsync('doHover')
-    else
-        vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
-    end
-end
-
--- wk.register({
---     ["<tab>"] = {[[coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()]], "Tab completion forward"},
---     ["<s-tab>"] = {[[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], "Tab completion backward"},
---     -- ["<cr>"] = {[[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], "Tab select"},
--- }, {
---     mode = 'i',
---     expr = true
--- })
-
-local opts = { noremap = true, expr = true, replace_keycodes = false }
-vim.keymap.set("i", "<tab>", [[coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()]],
-    opts)
-vim.keymap.set("i", "<s-tab>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
--- vim.keymap.set("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
-vim.keymap.set("i", "<CR>",
-    function()
-        if vim.fn['coc#pum#visible']() == 1 then
-            return vim.fn['coc#pum#confirm']()
-        else
-            return "\r"
-        end
-    end,
-    opts)
-
-
-wk.register({
-    ["<a-cr>"] = { [[<Plug>(coc-snippets-expand)]] }, "Expand snippet" }
-, {
-    mode = 'i',
-    silent = true
-})
-
-wk.register({
-    ["K"] = { '<cmd>lua _G.show_docs()<CR>', "Show docs" },
-    ["gd"] = { '<Plug>(coc-definition)', "Goto definition" },
-    ["QQ"] = { '<Plug>(coc-codeaction-cursor)', "Code actions" },
-    ["QE"] = { ':Telescope coc diagnostics<CR>', "Errors" }
-}, {
-    mode = 'n',
-    silent = true
-})
-
-
-wk.register({
-    ["oo"] = { [[:call CocAction('organizeImport')<cr>]], "Organize imports" }
-}, {
-    prefix = "<leader>",
-    mode = 'n',
-    -- silent = true
-})
-
-wk.register({
-    ["??"] = { '<Plug>(coc-format-selected)', "Format" },
-}, {
-    mode = 'v',
-    silent = true
-})
