@@ -570,6 +570,12 @@ function GenericKeybindsConfig()
         mode = "n",
         noremap = true
     })
+
+    wk.register({
+        ["ls"] = { function() print(_G.CurrentStatus) end, "Show current status" }
+    }, {
+        prefix = "<leader>"
+    })
 end
 
 ---}}}
