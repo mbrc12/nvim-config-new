@@ -768,6 +768,8 @@ function Configuration()
     })
 end
 
+Configuration()
+
 -------------------------------{{{ Neovide
 
 -- vim.o.guifont = "Iosevka NFP Medium:h11"
