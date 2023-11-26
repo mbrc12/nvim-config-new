@@ -50,7 +50,8 @@
       "command": "elvish",
       "args": ["-lsp"],
       "filetypes": ["elvish"]
-    }
+    },
   },
   "snippets.ultisnips.pythonPrompt": false,
+  "sumneko-lua.enableNvimLuaDev": true
 }

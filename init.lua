@@ -695,12 +695,45 @@ function CoCConfig()
 end
 --- }}}
 
+---{{{ TextWidthConfig
+function TextWidthConfig()
+    
+    function SetupTextWidth()
+        local api = vim.api
+        local length = api.nvim_buf_line_count(0)
+        if length <= 0 then
+            return
+        end
+
+        local line = api.nvim_buf_get_lines(0, length - 1, length, true)[1]
+        local data = string.match(line, "%%tw=([0-9]+)")
+        local tw = nil
+
+        if data ~= nil then
+            tw = tonumber(data)
+        end
+
+        if tw ~= nil then
+            vim.cmd([[setlocal textwidth=]]..tw..[[ formatoptions+=t ]])
+        end
+    end
+
+    wk.register({["'f"] =  {"ms{gq}'s", "Format paragraph" }}, { })
+
+    vim.api.nvim_create_autocmd({"BufEnter"}, {
+        pattern = {"*.tex"},
+        callback = SetupTextWidth
+    })
+end
+--- }}}
+
 function Configuration()
     DapConfig()
     TelescopeConfig()
     VimtexConfig()
     CoCConfig()
     GenericKeybindsConfig()
+    TextWidthConfig()
 
     highlight(0, 'FloatBorder', { link = 'Normal' })
     highlight(0, 'NormalFloat', { link = 'Normal' })
