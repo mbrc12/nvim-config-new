@@ -1,6 +1,6 @@
 -- local dark_colorscheme = "nightly"
 -- local dark_colorscheme = { "monokai-pro-spectrum", "dark" }
--- local dark_colorscheme = { "darkblue", "dark" }
+ -- local dark_colorscheme = { "darkblue", "dark" }
 -- local dark_colorscheme = { "noctis", "dark" }
 local dark_colorscheme = { "biscuit", "dark" }
 local light_colorscheme = { "dayfox", "light" }
@@ -95,9 +95,9 @@ local plugins = {
         end
     },
 
-    -- {
-    --     'fannheyward/telescope-coc.nvim'
-    -- },
+    {
+        'fannheyward/telescope-coc.nvim'
+    },
 
 
     {
@@ -147,8 +147,7 @@ local plugins = {
     },
 
     {
-        'kartikp10/noctis.nvim',
-        name = 'noctis',
+        'kartikp10/noctis.nvim', name = 'noctis',
         dependencies = {
             'rktjmp/lush.nvim'
         }
@@ -393,23 +392,11 @@ local plugins = {
 
 
     -- LSP
-    { 'williamboman/mason.nvim' },
-    { 'williamboman/mason-lspconfig.nvim' },
 
-    { 'VonHeikemen/lsp-zero.nvim',        branch = 'v3.x' },
-    { 'neovim/nvim-lspconfig' },
-    { 'hrsh7th/cmp-nvim-lsp' },
-    { 'hrsh7th/cmp-buffer' },
-    { 'hrsh7th/cmp-path' },
-    { 'saadparwaiz1/cmp_luasnip' },
-    { 'hrsh7th/nvim-cmp' },
-    {
-        'L3MON4D3/LuaSnip',
-        version = "v2.*"
-    },
 
     {
-        'vigoux/ltex-ls.nvim',
+        'neoclide/coc.nvim',
+        branch = 'release'
     },
 
     {
@@ -458,7 +445,7 @@ vim.o.background = colorscheme[2]
 local wk = require("which-key")
 local highlight = vim.api.nvim_set_hl
 
---- {{{ Dap
+--- {{{ Dap 
 function DapConfig()
     local dap = require("dap")
 
@@ -491,7 +478,7 @@ end
 
 ---}}}
 
----{{{ Generic Keybinds
+---{{{ Generic Keybinds 
 function GenericKeybindsConfig()
     wk.register({
         ["ec"] = { ":e ~/.config/nvim/init.lua<cr>", "Open config" }
@@ -539,17 +526,25 @@ end
 --- {{{ Telescope
 function TelescopeConfig()
     require("telescope").setup({
-        defaults = require("telescope.themes").get_ivy()
+        extensions = {
+            coc = {
+                theme = 'ivy',
+                prefer_locations = true, -- always use Telescope locations to preview definitions/declarations/implementations etc
+            },
+            builtin = {
+                theme = 'ivy'
+            },
+        },
     })
-    -- require('telescope').load_extension('coc')
+    require('telescope').load_extension('coc')
 
     local menu = require("nui.menu")
 
     local telescope_actions = {
-        -- { text = "Jump to definition",      cmd = "coc declarations" },
-        { text = "Show calls to this",      cmd = "lsp_incoming_calls" },
-        { text = "Show references to this", cmd = "lsp_references" },
-        { text = "Show workspace issues",   cmd = "diagnostics" },
+        { text = "Jump to definition",      cmd = "coc declarations" },
+        -- { text = "Show calls to this", cmd = "lsp_incoming_calls" },
+        { text = "Show references to this", cmd = "coc references" },
+        { text = "Show workspace issues",   cmd = "coc workspace_diagnostics" },
         { text = "Live grep",               cmd = "live_grep" },
     }
 
@@ -590,14 +585,14 @@ function TelescopeConfig()
 
 
     wk.register({
-        ["=="] = { ":Telescope<CR>", "Telescope" }
+        ["=="] = { ":Telescope coc commands<CR>", "CoC commands" }
     }, {
         prefix = "<leader>",
         mode = "n"
     })
 
     wk.register({ ["<F2>"] = { ":lua Telescope_Menu:mount()<CR>", "LSP actions" } })
-    wk.register({ ["<F3>"] = { "<cmd>Telescope lsp_document_symbols<CR>", "LSP symbols" } })
+    wk.register({ ["<F3>"] = { "<cmd>Telescope coc document_symbols<CR>", "LSP symbols" } })
     wk.register({ ["<F12>"] = { "<cmd>Telescope resume<CR>", "Resume last telescope" } })
     wk.register({
         ["f"] = { "<cmd>Telescope find_files<CR>", "Find files" },
@@ -607,8 +602,8 @@ function TelescopeConfig()
     })
 
     vim.cmd([[autocmd User TelescopePreviewerLoaded setlocal wrap]])
-end
 
+end
 ---}}}
 
 --- {{{ Vimtex
@@ -631,8 +626,78 @@ end
 
 ---}}}
 
+--- {{{ CoC 
+function CoCConfig()
+    function _G.check_back_space()
+        local col = vim.fn.col('.') - 1
+        return col == 0 or vim.fn.getline('.'):sub(col, col):match('%s') ~= nil
+    end
+
+    function _G.show_docs()
+        local cw = vim.fn.expand('<cword>')
+        if vim.fn.index({ 'vim', 'help' }, vim.bo.filetype) >= 0 then
+            vim.api.nvim_command('h ' .. cw)
+        elseif vim.api.nvim_eval('coc#rpc#ready()') then
+            vim.fn.CocActionAsync('doHover')
+        else
+            vim.api.nvim_command('!' .. vim.o.keywordprg .. ' ' .. cw)
+        end
+    end
+
+    local opts = { noremap = true, expr = true, replace_keycodes = false }
+    vim.keymap.set("i", "<tab>", [[coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()]],
+    opts)
+    vim.keymap.set("i", "<s-tab>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
+    -- vim.keymap.set("i", "<cr>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
+    vim.keymap.set("i", "<CR>",
+        function()
+            if vim.fn['coc#pum#visible']() == 1 then
+                return vim.fn['coc#pum#confirm']()
+            else
+                return "\r"
+            end
+        end,
+    opts)
+
+    wk.register({
+        ["<a-cr>"] = { [[<Plug>(coc-snippets-expand)]] , "Expand snippet" },
+        {
+            mode = 'i',
+            silent = true
+        }
+    })
+
+    wk.register({
+        ["K"] = { '<cmd>lua _G.show_docs()<CR>', "Show docs" },
+        ["gd"] = { '<Plug>(coc-definition)', "Goto definition" },
+        ["QQ"] = { '<Plug>(coc-codeaction-cursor)', "Code actions" },
+        ["QE"] = { ':Telescope coc diagnostics<CR>', "Errors" }
+    }, {
+        mode = 'n',
+        silent = true
+    })
+
+
+    wk.register({
+        ["oo"] = { [[:call CocAction('organizeImport')<cr>]], "Organize imports" }
+    }, {
+        prefix = "<leader>",
+        mode = 'n',
+        -- silent = true
+    })
+
+    wk.register({
+        ["??"] = { '<Plug>(coc-format-selected)', "Format" },
+    }, {
+        mode = 'v',
+        silent = true
+    })
+end
+--- }}}
+
 ---{{{ TextWidthConfig
 function TextWidthConfig()
+    
     function SetupTextWidth()
         local api = vim.api
         local length = api.nvim_buf_line_count(0)
@@ -649,126 +714,39 @@ function TextWidthConfig()
         end
 
         if tw ~= nil then
-            vim.cmd([[setlocal textwidth=]] .. tw .. [[ formatoptions+=t ]])
+            vim.cmd([[setlocal textwidth=]]..tw..[[ formatoptions+=t ]])
         end
     end
 
-    wk.register({ ["'f"] = { "ms{gq}'s", "Format paragraph" } }, {})
+    wk.register({["'f"] =  {"ms{gq}'s", "Format paragraph" }}, { })
 
-    vim.api.nvim_create_autocmd({ "BufEnter" }, {
-        pattern = { "*.tex" },
+    vim.api.nvim_create_autocmd({"BufEnter"}, {
+        pattern = {"*.tex"},
         callback = SetupTextWidth
     })
 end
-
 --- }}}
-
---- {{{ LspConfig
-function LspConfig()
-    local lsp_zero = require('lsp-zero')
-
-    lsp_zero.on_attach(function(_client, bufnr)
-        -- see :help lsp-zero-keybindings
-        -- to learn the available actions
-        lsp_zero.default_keymaps({ buffer = bufnr })
-    end)
-
-    require("mason").setup()
-    require("mason-lspconfig").setup({
-        handlers = {
-            lsp_zero.default_setup,
-        }
-    })
-
-    require("lspconfig").ltex.setup {
-        filetypes = { "latex", "tex", "bib", "markdown", "text" },
-    }
-
-    lsp_zero.setup_servers({ "lua_ls", "rust_analyzer", "omnisharp" })
-
-    vim.api.nvim_set_hl(0, "CmpNormal", { link = "Normal" })
-
-    local MAX_LABEL_WIDTH = 80
-    local ELLIPSIS_CHAR = "…"
-
-    local function fixed_width(content)
-        local result = ""
-        if #content > MAX_LABEL_WIDTH then
-            result = vim.fn.strcharpart(content, 0, MAX_LABEL_WIDTH) .. ELLIPSIS_CHAR
-        else
-            result = content
-        end
-        return result
-    end
-
-    require("luasnip.loaders.from_snipmate").lazy_load()
-    require("luasnip.loaders.from_vscode").lazy_load()
-
-    local cmp = require("cmp")
-    local cmp_select = { behavior = cmp.SelectBehavior.Select }
-
-    cmp.setup({
-        preselect = cmp.PreselectMode.None,
-        sources = {
-            { name = "luasnip" },
-            { name = "path" },
-            { name = "nvim_lsp" },
-            { name = "buffer" }
-        },
-
-        formatting = {
-            fields = { 'menu', 'abbr', 'kind' },
-            format = function(entry, item)
-                local menu_icon = {
-                    nvim_lsp = 'λ',
-                    luasnip = '⋗',
-                    buffer = 'Ω',
-                    path = '🖫',
-                }
-
-                item.abbr = fixed_width(item.abbr)
-
-                item.menu = menu_icon[entry.source.name]
-                item.kind_hl_group = "TSKeyword"
-
-                return item
-            end,
-        },
-        mapping = cmp.mapping.preset.insert({
-            ['<Tab>'] = cmp.mapping.select_next_item(cmp_select),
-            ['<S-Tab>'] = cmp.mapping.select_prev_item(cmp_select),
-            ['<Enter>'] = cmp.mapping.confirm({ select = true }),
-        }),
-        window = {
-            completion = {
-                border = "rounded",
-                -- winhighlight = "NormalFloat:Normal"
-                winhighlight = "Normal:CmpNormal"
-            },
-
-            documentation = {
-                border = "rounded",
-                max_width = 80,
-                max_height = 20,
-            }
-        }
-    })
-
-end
-
----}}}
 
 function Configuration()
     DapConfig()
     TelescopeConfig()
     VimtexConfig()
-    LspConfig()
+    CoCConfig()
     GenericKeybindsConfig()
     TextWidthConfig()
 
     highlight(0, 'FloatBorder', { link = 'Normal' })
     highlight(0, 'NormalFloat', { link = 'Normal' })
-    -- highlight(0, 'LspInlayHint', { link = 'Comment' })
+    highlight(0, 'LspInlayHint', { link = 'Comment' })
+
+    vim.api.nvim_create_autocmd("User", {
+        pattern = "CocStatusChange",
+        callback = function()
+            local status = vim.call("coc#status")
+            _G.CurrentStatus = status
+            print(status)
+        end
+    })
 end
 
 Configuration()
