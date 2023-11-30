@@ -1,12 +1,10 @@
 -- local dark_colorscheme = "nightly"
 -- local dark_colorscheme = { "monokai-pro-spectrum", "dark" }
--- local dark_colorscheme = { "darkblue", "dark" }
--- local dark_colorscheme = { "noctis", "dark" }
-local dark_colorscheme = { "biscuit", "dark" }
-local light_colorscheme = { "dayfox", "light" }
+local dark_colorscheme = { "gruvbox-baby", "dark" }
+-- local dark_colorscheme = { "carbonfox", "dark" }
+-- local dark_colorscheme = { "biscuit", "dark" }
+-- local light_colorscheme = { "dayfox", "light" }
 local colorscheme = dark_colorscheme
-
-_G.CurrentStatus = ""
 
 ---{{{ Lazy
 local lazypath = vim.fn.stdpath("data") .. "/lazy/lazy.nvim"
@@ -122,6 +120,8 @@ local plugins = {
     'MunifTanjim/nui.nvim',
 
     -- Colorschemes
+    { 'AhmedAbdulrahman/aylin.vim' },
+
     {
         'EdenEast/nightfox.nvim',
         config = function()
@@ -179,8 +179,25 @@ local plugins = {
         end
     },
 
-    {
-        "ellisonleao/gruvbox.nvim"
+    { 
+        'luisiacc/gruvbox-baby',
+        config = function()
+            vim.g.gruvbox_baby_function_style = "NONE"
+            vim.g.gruvbox_baby_keyword_style = "italic"
+            vim.g.gruvbox_baby_background_color = "dark"
+
+            -- Each highlight group must follow the structure:
+            -- ColorGroup = {fg = "foreground color", bg = "background_color", style = "some_style(:h attr-list)"}
+            -- See also :h highlight-guifg
+            -- Example:
+            -- vim.g.gruvbox_baby_highlights = {Normal = {fg = "#123123", bg = "NONE", style="underline"}}
+
+            -- Enable telescope theme
+            vim.g.gruvbox_baby_telescope_theme = 1
+
+            -- Enable transparent mode
+            -- vim.g.gruvbox_baby_transparent_mode = 1
+        end
     },
 
     {
@@ -331,6 +348,13 @@ local plugins = {
                 options = {
                     component_separators = { left = '', right = '' },
                     section_separators = { left = '', right = '' },
+                    theme = (function()
+                        if colorscheme == "gruvbox-baby" then
+                            return "gruvbox-baby"
+                        else
+                            return nil
+                        end
+                    end)(),
                     disabled_filetypes = {
                         statusline = { 'lazy', 'NvimTree' },
                         winbar = { 'lazy', 'NvimTree' }
@@ -339,7 +363,7 @@ local plugins = {
                 sections = {
                     lualine_a = { 'mode' },
                     lualine_b = { 'branch', 'diff' },
-                    lualine_c = { 'filename' },
+                    lualine_c = { 'filename', require('lsp-progress').progress },
                     lualine_x = { 'encoding', 'fileformat', '', 'filetype' },
                     lualine_y = { 'progress' },
                     lualine_z = { 'location' }
@@ -406,6 +430,14 @@ local plugins = {
     {
         'L3MON4D3/LuaSnip',
         version = "v2.*"
+    },
+
+    {
+        'linrongbin16/lsp-progress.nvim',
+        dependencies = { 'nvim-tree/nvim-web-devicons' },
+        config = function()
+            require('lsp-progress').setup()
+        end
     },
 
     {
@@ -525,12 +557,6 @@ function GenericKeybindsConfig()
     }, {
         mode = "n",
         noremap = true
-    })
-
-    wk.register({
-        ["ls"] = { function() print(_G.CurrentStatus) end, "Show current status" }
-    }, {
-        prefix = "<leader>"
     })
 end
 
@@ -670,7 +696,7 @@ function LspConfig()
     lsp_zero.on_attach(function(_client, bufnr)
         -- see :help lsp-zero-keybindings
         -- to learn the available actions
-        lsp_zero.default_keymaps({ buffer = bufnr })
+        lsp_zero.default_keymaps({ buffer = bufnr, preserve_mappings = false })
     end)
 
     require("mason").setup()
@@ -720,10 +746,10 @@ function LspConfig()
             fields = { 'menu', 'abbr', 'kind' },
             format = function(entry, item)
                 local menu_icon = {
-                    nvim_lsp = 'λ',
-                    luasnip = '⋗',
-                    buffer = 'Ω',
-                    path = '🖫',
+                    nvim_lsp = 'λ ',
+                    luasnip = '⋗ ',
+                    buffer = 'Ω ',
+                    path = '🖫 ',
                 }
 
                 item.abbr = fixed_width(item.abbr)
@@ -737,7 +763,7 @@ function LspConfig()
         mapping = cmp.mapping.preset.insert({
             ['<Tab>'] = cmp.mapping.select_next_item(cmp_select),
             ['<S-Tab>'] = cmp.mapping.select_prev_item(cmp_select),
-            ['<Enter>'] = cmp.mapping.confirm({ select = true }),
+            ['<Enter>'] = cmp.mapping.confirm(),
         }),
         window = {
             completion = {
@@ -748,12 +774,19 @@ function LspConfig()
 
             documentation = {
                 border = "rounded",
-                max_width = 80,
-                max_height = 20,
+                max_width = 30,
+                -- max_height = 20,
             }
         }
     })
+end
 
+---}}}
+
+---{{{ LSP Extras
+function LspExtras()
+    -- require("fidget").setup {
+    -- }
 end
 
 ---}}}
@@ -763,6 +796,7 @@ function Configuration()
     TelescopeConfig()
     VimtexConfig()
     LspConfig()
+    LspExtras()
     GenericKeybindsConfig()
     TextWidthConfig()
 
