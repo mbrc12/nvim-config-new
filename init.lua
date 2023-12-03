@@ -182,7 +182,7 @@ local plugins = {
     { 
         'luisiacc/gruvbox-baby',
         config = function()
-            vim.g.gruvbox_baby_function_style = "NONE"
+            -- vim.g.gruvbox_baby_function_style = "NONE"
             vim.g.gruvbox_baby_keyword_style = "italic"
             vim.g.gruvbox_baby_background_color = "dark"
 
@@ -466,6 +466,13 @@ local plugins = {
         dependencies = { "mfussenegger/nvim-dap" }
     },
 
+    {
+        "iamcco/markdown-preview.nvim",
+        cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
+        ft = { "markdown" },
+        build = function() vim.fn["mkdp#util#install"]() end,
+    },
+
 
     {
         'lervag/vimtex',
@@ -680,6 +687,7 @@ function TextWidthConfig()
     end
 
     wk.register({ ["'f"] = { "ms{gq}'s", "Format paragraph" } }, {})
+    wk.register({ ["'f"] = { "gq", "Format paragraph" } }, {mode = "v"})
 
     vim.api.nvim_create_autocmd({ "BufEnter" }, {
         pattern = { "*.tex" },
@@ -699,6 +707,22 @@ function LspConfig()
         lsp_zero.default_keymaps({ buffer = bufnr, preserve_mappings = false })
     end)
 
+    lsp_zero.set_server_config({
+        on_init = function(client)
+            client.server_capabilities.semanticTokensProvider = nil
+        end,
+    })
+
+    local border = "rounded"
+
+    local orig_util_open_floating_preview = vim.lsp.util.open_floating_preview
+    function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
+        opts = opts or {}
+        opts.border = border
+        opts.max_width = 80
+        return orig_util_open_floating_preview(contents, syntax, opts, ...)
+    end
+
     require("mason").setup()
     require("mason-lspconfig").setup({
         handlers = {
@@ -706,11 +730,12 @@ function LspConfig()
         }
     })
 
-    require("lspconfig").ltex.setup {
-        filetypes = { "latex", "tex", "bib", "markdown", "text" },
-    }
 
-    lsp_zero.setup_servers({ "lua_ls", "rust_analyzer", "omnisharp" })
+    -- require("lspconfig").ltex.setup {
+    --     filetypes = { "latex", "tex", "bib", "markdown", "text" },
+    -- }
+
+    lsp_zero.setup_servers({ "lua_ls", "rust_analyzer", "omnisharp", "digestif" })
 
     vim.api.nvim_set_hl(0, "CmpNormal", { link = "Normal" })
 
@@ -774,7 +799,7 @@ function LspConfig()
 
             documentation = {
                 border = "rounded",
-                max_width = 30,
+                max_width = 80,
                 -- max_height = 20,
             }
         }
