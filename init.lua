@@ -179,7 +179,7 @@ local plugins = {
         end
     },
 
-    { 
+    {
         'luisiacc/gruvbox-baby',
         config = function()
             -- vim.g.gruvbox_baby_function_style = "NONE"
@@ -363,7 +363,7 @@ local plugins = {
                 sections = {
                     lualine_a = { 'mode' },
                     lualine_b = { 'branch', 'diff' },
-                    lualine_c = { 'filename', require('lsp-progress').progress },
+                    lualine_c = { 'filename' }, --, require('lsp-progress').progress },
                     lualine_x = { 'encoding', 'fileformat', '', 'filetype' },
                     lualine_y = { 'progress' },
                     lualine_z = { 'location' }
@@ -425,6 +425,7 @@ local plugins = {
     { 'hrsh7th/cmp-nvim-lsp' },
     { 'hrsh7th/cmp-buffer' },
     { 'hrsh7th/cmp-path' },
+    { 'hrsh7th/cmp-nvim-lsp-signature-help' },
     { 'saadparwaiz1/cmp_luasnip' },
     { 'hrsh7th/nvim-cmp' },
     {
@@ -432,16 +433,41 @@ local plugins = {
         version = "v2.*"
     },
 
+    -- {
+        --     'linrongbin16/lsp-progress.nvim',
+        --     dependencies = { 'nvim-tree/nvim-web-devicons' },
+        --     config = function()
+            --         require('lsp-progress').setup()
+            --     end
+            -- },
+
+    -- {
+    --     "ray-x/lsp_signature.nvim",
+    --     event = "VeryLazy",
+    --     opts = {},
+    --     config = function(_, opts) require'lsp_signature'.setup(opts) end
+    -- },
+
     {
-        'linrongbin16/lsp-progress.nvim',
-        dependencies = { 'nvim-tree/nvim-web-devicons' },
-        config = function()
-            require('lsp-progress').setup()
+        "j-hui/fidget.nvim",
+        config = function ()
+            require("fidget").setup()
         end
     },
 
+    -- {
+    --     'lvimuser/lsp-inlayhints.nvim',
+    --     config = function ()
+    --         require("lsp-inlayhints").setup()
+    --     end
+    -- },
+
     {
         'vigoux/ltex-ls.nvim',
+    },
+
+    {
+        'simrat39/rust-tools.nvim'
     },
 
     {
@@ -485,8 +511,11 @@ local plugins = {
                 continuous = 1
             }
         end
-    }
+    },
 
+    {
+        "micangl/cmp-vimtex",
+    }
 }
 ---}}}
 
@@ -630,7 +659,7 @@ function TelescopeConfig()
     })
 
     wk.register({ ["<F2>"] = { ":lua Telescope_Menu:mount()<CR>", "LSP actions" } })
-    wk.register({ ["<F3>"] = { "<cmd>Telescope lsp_document_symbols<CR>", "LSP symbols" } })
+    wk.register({ ["e"] = { "<cmd>Telescope diagnostics<CR>", "Diagnostics" } }, { prefix = "<leader>" })
     wk.register({ ["<F12>"] = { "<cmd>Telescope resume<CR>", "Resume last telescope" } })
     wk.register({
         ["f"] = { "<cmd>Telescope find_files<CR>", "Find files" },
@@ -687,7 +716,7 @@ function TextWidthConfig()
     end
 
     wk.register({ ["'f"] = { "ms{gq}'s", "Format paragraph" } }, {})
-    wk.register({ ["'f"] = { "gq", "Format paragraph" } }, {mode = "v"})
+    wk.register({ ["'f"] = { "gq", "Format paragraph" } }, { mode = "v" })
 
     vim.api.nvim_create_autocmd({ "BufEnter" }, {
         pattern = { "*.tex" },
@@ -699,12 +728,16 @@ end
 
 --- {{{ LspConfig
 function LspConfig()
+
+
     local lsp_zero = require('lsp-zero')
 
-    lsp_zero.on_attach(function(_client, bufnr)
+    lsp_zero.on_attach(function(client, bufnr)
         -- see :help lsp-zero-keybindings
         -- to learn the available actions
         lsp_zero.default_keymaps({ buffer = bufnr, preserve_mappings = false })
+        -- vim.lsp.inlay_hint.enable(bufnr, true)
+        -- require("lsp-inlayhints").on_attach(client, bufnr)
     end)
 
     lsp_zero.set_server_config({
@@ -712,6 +745,8 @@ function LspConfig()
             client.server_capabilities.semanticTokensProvider = nil
         end,
     })
+
+    local rust_lsp = lsp_zero.build_options('rust_analyzer', {})
 
     local border = "rounded"
 
@@ -735,7 +770,10 @@ function LspConfig()
     --     filetypes = { "latex", "tex", "bib", "markdown", "text" },
     -- }
 
-    lsp_zero.setup_servers({ "lua_ls", "rust_analyzer", "omnisharp", "digestif" })
+    lsp_zero.setup_servers({ "lua_ls", "omnisharp" })
+
+    -- setup rust separately with rust tools
+    require("rust-tools").setup({server = rust_lsp})
 
     vim.api.nvim_set_hl(0, "CmpNormal", { link = "Normal" })
 
@@ -761,9 +799,11 @@ function LspConfig()
     cmp.setup({
         preselect = cmp.PreselectMode.None,
         sources = {
+            { name = 'nvim_lsp_signature_help' },
             { name = "luasnip" },
             { name = "path" },
             { name = "nvim_lsp" },
+            { name = "vimtex" },
             { name = "buffer" }
         },
 
@@ -772,6 +812,7 @@ function LspConfig()
             format = function(entry, item)
                 local menu_icon = {
                     nvim_lsp = 'λ ',
+                    vimtex = 'ξ ',
                     luasnip = '⋗ ',
                     buffer = 'Ω ',
                     path = '🖫 ',
@@ -780,7 +821,11 @@ function LspConfig()
                 item.abbr = fixed_width(item.abbr)
 
                 item.menu = menu_icon[entry.source.name]
-                item.kind_hl_group = "TSKeyword"
+                item.kind_hl_group = "TSString"
+
+                if entry.source.name == "vimtex" then
+                    item.kind = "VimTeX"
+                end
 
                 return item
             end,
