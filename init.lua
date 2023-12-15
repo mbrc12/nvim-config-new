@@ -234,7 +234,7 @@ local plugins = {
         config = function()
             require("nvim-tree").setup {
                 view = {
-                    adaptive_size = true,
+                    adaptive_size = false,
                 },
 
                 renderer = {
@@ -420,8 +420,10 @@ local plugins = {
     { 'williamboman/mason.nvim' },
     { 'williamboman/mason-lspconfig.nvim' },
 
-    { 'VonHeikemen/lsp-zero.nvim',        branch = 'v3.x' },
+    { 'VonHeikemen/lsp-zero.nvim',          branch = 'v3.x' },
     { 'neovim/nvim-lspconfig' },
+
+
     { 'hrsh7th/cmp-nvim-lsp' },
     { 'hrsh7th/cmp-buffer' },
     { 'hrsh7th/cmp-path' },
@@ -433,13 +435,26 @@ local plugins = {
         version = "v2.*"
     },
 
+    {
+        'tamago324/nlsp_settings.nvim',
+        config = function()
+            require("nlspsettings").setup {
+                config_home = vim.fn.stdpath('config') .. '/nlsp-settings',
+                local_settings_dir = ".nlsp",
+                local_settings_root_markers_fallback = { '.git' },
+                append_default_schemas = true,
+                loader = 'json'
+            }
+        end
+    },
+
     -- {
-        --     'linrongbin16/lsp-progress.nvim',
-        --     dependencies = { 'nvim-tree/nvim-web-devicons' },
-        --     config = function()
-            --         require('lsp-progress').setup()
-            --     end
-            -- },
+    --     'linrongbin16/lsp-progress.nvim',
+    --     dependencies = { 'nvim-tree/nvim-web-devicons' },
+    --     config = function()
+    --         require('lsp-progress').setup()
+    --     end
+    -- },
 
     -- {
     --     "ray-x/lsp_signature.nvim",
@@ -450,7 +465,7 @@ local plugins = {
 
     {
         "j-hui/fidget.nvim",
-        config = function ()
+        config = function()
             require("fidget").setup()
         end
     },
@@ -470,18 +485,18 @@ local plugins = {
         'simrat39/rust-tools.nvim'
     },
 
-    {
-        'puremourning/vimspector',
-        config = function()
-            local wk = require('which-key')
-            wk.register({
-                ["pp"] = { "<Plug>VimspectorBalloonEval", "Vimspector balloon eval" }
-            }, {
-                prefix = "<leader>",
-                mode = "n",
-            })
-        end
-    },
+    -- {
+    --     'puremourning/vimspector',
+    --     config = function()
+    --         local wk = require('which-key')
+    --         wk.register({
+    --             ["pp"] = { "<Plug>VimspectorBalloonEval", "Vimspector balloon eval" }
+    --         }, {
+    --             prefix = "<leader>",
+    --             mode = "n",
+    --         })
+    --     end
+    -- },
 
     {
         'mfussenegger/nvim-dap',
@@ -728,8 +743,6 @@ end
 
 --- {{{ LspConfig
 function LspConfig()
-
-
     local lsp_zero = require('lsp-zero')
 
     lsp_zero.on_attach(function(client, bufnr)
@@ -770,10 +783,18 @@ function LspConfig()
     --     filetypes = { "latex", "tex", "bib", "markdown", "text" },
     -- }
 
-    lsp_zero.setup_servers({ "lua_ls", "omnisharp" })
+    -- require("lspcV
+    --     cmd = { "bunx", "tsserver"},
+    --     init_options = {
+    --         hostInfo = "neovim"
+    --     },
+    --     single_file_support = true
+    -- }
+
+    lsp_zero.setup_servers({ "lua_ls", "omnisharp", "tsserver" })
 
     -- setup rust separately with rust tools
-    require("rust-tools").setup({server = rust_lsp})
+    require("rust-tools").setup({ server = rust_lsp })
 
     vim.api.nvim_set_hl(0, "CmpNormal", { link = "Normal" })
 
