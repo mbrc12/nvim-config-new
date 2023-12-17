@@ -316,7 +316,7 @@ local plugins = {
                 auto_hide = false,
                 insert_at_end = true,
                 icons = {
-                    button = '❌'
+                    button = '',
                 }
             }
 
@@ -364,7 +364,7 @@ local plugins = {
                     lualine_a = { 'mode' },
                     lualine_b = { 'branch', 'diff' },
                     lualine_c = { 'filename' }, --, require('lsp-progress').progress },
-                    lualine_x = { 'encoding', 'fileformat', '', 'filetype' },
+                    lualine_x = { 'encoding', 'fileformat', { 'diagnostics', sources = { 'nvim_lsp' } }, 'filetype' },
                     lualine_y = { 'progress' },
                     lualine_z = { 'location' }
                 },
@@ -436,7 +436,17 @@ local plugins = {
     },
 
     {
-        'tamago324/nlsp_settings.nvim',
+        'stevearc/aerial.nvim',
+        opts = {},
+        -- Optional dependencies
+        dependencies = {
+            "nvim-treesitter/nvim-treesitter",
+            "nvim-tree/nvim-web-devicons"
+        },
+    },
+
+    {
+        'tamago324/nlsp-settings.nvim',
         config = function()
             require("nlspsettings").setup {
                 config_home = vim.fn.stdpath('config') .. '/nlsp-settings',
@@ -540,6 +550,15 @@ vim.o.background = colorscheme[2]
 
 local wk = require("which-key")
 local highlight = vim.api.nvim_set_hl
+
+function FileTypesConfig()
+    vim.api.nvim_create_autocmd({ "BufNewFile", "BufRead" }, {
+        pattern = "*.wgsl",
+        callback = function()
+            vim.bo.filetype = "wgsl"
+        end,
+    })
+end
 
 --- {{{ Dap
 function DapConfig()
@@ -790,8 +809,8 @@ function LspConfig()
     --     },
     --     single_file_support = true
     -- }
-
-    lsp_zero.setup_servers({ "lua_ls", "omnisharp", "tsserver" })
+    --
+    lsp_zero.setup_servers({ "lua_ls", "omnisharp", "tsserver", "wgsl_analyzer" })
 
     -- setup rust separately with rust tools
     require("rust-tools").setup({ server = rust_lsp })
@@ -870,6 +889,21 @@ function LspConfig()
             }
         }
     })
+
+    require("aerial").setup {
+        layout = {
+            max_width = {0.25},
+            min_width = 30
+        },
+        on_attach = function(bufnr)
+        end
+    }
+
+    wk.register({
+        ["s"] = {"<cmd>AerialToggle<CR>", "Open aerial" }
+    }, {
+        prefix = "<leader>"
+    })
 end
 
 ---}}}
@@ -883,6 +917,7 @@ end
 ---}}}
 
 function Configuration()
+    FileTypesConfig()
     DapConfig()
     TelescopeConfig()
     VimtexConfig()
