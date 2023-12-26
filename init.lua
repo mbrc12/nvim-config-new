@@ -4,6 +4,7 @@ local dark_colorscheme = { "gruvbox-baby", "dark" }
 -- local dark_colorscheme = { "carbonfox", "dark" }
 -- local dark_colorscheme = { "biscuit", "dark" }
 -- local light_colorscheme = { "dayfox", "light" }
+-- local colorscheme = light_colorscheme
 local colorscheme = dark_colorscheme
 
 ---{{{ Lazy
@@ -235,6 +236,7 @@ local plugins = {
             require("nvim-tree").setup {
                 view = {
                     adaptive_size = false,
+                    width = 25
                 },
 
                 renderer = {
@@ -307,7 +309,6 @@ local plugins = {
         end
     },
 
-
     {
         'romgrk/barbar.nvim',
         dependencies = { 'nvim-tree/nvim-web-devicons' },
@@ -333,11 +334,12 @@ local plugins = {
             wk.register({ ['<C-q>'] = { '<Cmd>BufferClose<CR>', "Close buffer" } })
 
             wk.register({
-                ["<C->>"] = { "<Cmd>BufferMoveNext<CR>", "Buffer move to next" },
-                ["<C-<>"] = { "<Cmd>BufferMovePrevious<CR>", "Buffer move to previous" }
+                ["<M->>"] = { "<Cmd>BufferMoveNext<CR>", "Buffer move to next" },
+                ["<M-<>"] = { "<Cmd>BufferMovePrevious<CR>", "Buffer move to previous" }
             })
         end
     }, --barbar
+    --
 
     {
         'nvim-lualine/lualine.nvim',
@@ -529,7 +531,7 @@ local plugins = {
         'lervag/vimtex',
         config = function()
             vim.g.tex_flavor = "latex"
-            vim.g.vimtex_quickfix_ignore_filters = { 'Underfull', 'Overfull', 'Token not allowed' }
+            vim.g.vimtex_quickfix_ignore_filters = { 'Underfull', 'Overfull', 'Token not allowed', 'Size' }
             vim.g.vimtex_view_method = "zathura"
             vim.g.Tex_IgnoreLevel = 8
             vim.g.vimtex_compiler_latexmk = {
@@ -786,7 +788,7 @@ function LspConfig()
     function vim.lsp.util.open_floating_preview(contents, syntax, opts, ...)
         opts = opts or {}
         opts.border = border
-        opts.max_width = 80
+        opts.max_width = 60
         return orig_util_open_floating_preview(contents, syntax, opts, ...)
     end
 
@@ -810,14 +812,20 @@ function LspConfig()
     --     single_file_support = true
     -- }
     --
-    lsp_zero.setup_servers({ "lua_ls", "omnisharp", "tsserver", "wgsl_analyzer" })
+    lsp_zero.setup_servers({
+        "lua_ls",
+        "omnisharp",
+        "tsserver",
+        "wgsl_analyzer",
+        "hls"
+    })
 
     -- setup rust separately with rust tools
     require("rust-tools").setup({ server = rust_lsp })
 
     vim.api.nvim_set_hl(0, "CmpNormal", { link = "Normal" })
 
-    local MAX_LABEL_WIDTH = 80
+    local MAX_LABEL_WIDTH = 60
     local ELLIPSIS_CHAR = "…"
 
     local function fixed_width(content)
@@ -884,7 +892,7 @@ function LspConfig()
 
             documentation = {
                 border = "rounded",
-                max_width = 80,
+                max_width = 60,
                 -- max_height = 20,
             }
         }
@@ -892,7 +900,7 @@ function LspConfig()
 
     require("aerial").setup {
         layout = {
-            max_width = {0.25},
+            max_width = { 0.25 },
             min_width = 30
         },
         on_attach = function(bufnr)
@@ -900,7 +908,7 @@ function LspConfig()
     }
 
     wk.register({
-        ["s"] = {"<cmd>AerialToggle<CR>", "Open aerial" }
+        ["s"] = { "<cmd>AerialToggle<CR>", "Open aerial" }
     }, {
         prefix = "<leader>"
     })
@@ -915,6 +923,7 @@ function LspExtras()
 end
 
 ---}}}
+
 
 function Configuration()
     FileTypesConfig()
