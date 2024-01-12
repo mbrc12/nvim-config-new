@@ -46,7 +46,7 @@ vim.o.shiftwidth = 4
 vim.o.smartindent = true
 vim.o.softtabstop = 4
 vim.o.tabstop = 4
-vim.o.termguicolors = true
+vim.o.termguicolors = false
 vim.o.wildmenu = true
 vim.o.wrap = false
 vim.o.clipboard = "unnamedplus"
@@ -101,6 +101,32 @@ local plugins = {
 
     {
         'mhinz/vim-startify'
+    },
+
+    {
+        "nvim-neorg/neorg",
+        build = ":Neorg sync-parsers",
+        dependencies = { "nvim-lua/plenary.nvim" },
+        config = function()
+            require("neorg").setup {
+                load = {
+                    ["core.defaults"] = {},
+                    ["core.concealer"] = {},
+                    ["core.export"] = {},
+                    ["core.dirman"] = {
+                        config = {
+                            workspaces = {
+                                notes = "~/docs/notes",
+                            },
+                            default_workspace = "notes",
+                        },
+                    },
+                },
+            }
+
+            vim.wo.foldlevel = 99
+            vim.wo.conceallevel = 2
+        end,
     },
 
 
@@ -292,7 +318,7 @@ local plugins = {
                     { text = { "%C" }, click = "v:lua.ScFa" },
                     { text = { "%s" }, click = "v:lua.ScSa" },
                     {
-                        text = { " ", builtin.lnumfunc, " ┃ " }, -- ·" },
+                        text = { " ", builtin.lnumfunc, " ▐ ", }, --builtin.lnumfunc, " ┃ " }, -- ·" },
                         condition = { true, builtin.not_empty },
                         click = "v:lua.ScLa",
                     }
@@ -423,7 +449,13 @@ local plugins = {
     { 'williamboman/mason-lspconfig.nvim' },
 
     { 'VonHeikemen/lsp-zero.nvim',          branch = 'v3.x' },
-    { 'neovim/nvim-lspconfig' },
+    { 'neovim/nvim-lspconfig',
+        init_options = {
+            userLanguages = {
+                rust = "html"
+            }
+        }
+    },
 
 
     { 'hrsh7th/cmp-nvim-lsp' },
@@ -489,9 +521,9 @@ local plugins = {
     --     end
     -- },
 
-    {
-        'vigoux/ltex-ls.nvim',
-    },
+    -- {
+    --     'vigoux/ltex-ls.nvim',
+    -- },
 
     {
         'simrat39/rust-tools.nvim'
@@ -531,7 +563,7 @@ local plugins = {
         'lervag/vimtex',
         config = function()
             vim.g.tex_flavor = "latex"
-            vim.g.vimtex_quickfix_ignore_filters = { 'Underfull', 'Overfull', 'Token not allowed', 'Size' }
+            vim.g.vimtex_quickfix_ignore_filters = { 'Underfull', 'Overfull', 'Token not allowed', 'Size', 'Draft' }
             vim.g.vimtex_view_method = "zathura"
             vim.g.Tex_IgnoreLevel = 8
             vim.g.vimtex_compiler_latexmk = {
@@ -816,8 +848,12 @@ function LspConfig()
         "lua_ls",
         "omnisharp",
         "tsserver",
+        "svelte",
+        "gopls",
         "wgsl_analyzer",
-        "hls"
+        "hls",
+        "elixirls",
+        "zls"
     })
 
     -- setup rust separately with rust tools
@@ -916,14 +952,19 @@ end
 
 ---}}}
 
----{{{ LSP Extras
-function LspExtras()
-    -- require("fidget").setup {
-    -- }
-end
-
 ---}}}
 
+---{{{ Neorg config 
+function NeorgConfig()
+    wk.register({
+        ["nj"] = { ":Neorg journal today<CR>", "Open today's journal" },
+        ["ni"] = { ":Neorg index<CR>", "Open index file" },
+    }, {
+        mode = "n",
+        prefix = "<leader>",
+    })
+end
+--}}}
 
 function Configuration()
     FileTypesConfig()
@@ -931,9 +972,9 @@ function Configuration()
     TelescopeConfig()
     VimtexConfig()
     LspConfig()
-    LspExtras()
     GenericKeybindsConfig()
     TextWidthConfig()
+    NeorgConfig()
 
     highlight(0, 'FloatBorder', { link = 'Normal' })
     highlight(0, 'NormalFloat', { link = 'Normal' })
