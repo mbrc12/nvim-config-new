@@ -275,9 +275,9 @@ local plugins = {
                     }
                 },
 
-                filters = {
-                    dotfiles = true, -- don't show dotfiles
-                },
+                -- filters = {
+                --     dotfiles = true, -- don't show dotfiles
+                -- },
                 sync_root_with_cwd = true,
                 respect_buf_cwd = true,
                 update_focused_file = {
@@ -563,11 +563,12 @@ local plugins = {
         'lervag/vimtex',
         config = function()
             vim.g.tex_flavor = "latex"
-            vim.g.vimtex_quickfix_ignore_filters = { 'Underfull', 'Overfull', 'Token not allowed', 'Size', 'Draft' }
+            vim.g.vimtex_quickfix_ignore_filters = { 'Underfull', 'Overfull', 'Token not allowed', 'Size', 'Draft', 'Font shape' }
             vim.g.vimtex_view_method = "zathura"
             vim.g.Tex_IgnoreLevel = 8
             vim.g.vimtex_compiler_latexmk = {
-                continuous = 1
+                continuous = 1,
+                options = { "-shell-escape" }
             }
         end
     },
