@@ -98,6 +98,14 @@ local plugins = {
     --     'fannheyward/telescope-coc.nvim'
     -- },
 
+    {
+        "EthanJWright/vs-tasks.nvim",
+        dependencies = {
+            "nvim-lua/popup.nvim",
+            "nvim-lua/plenary.nvim",
+            "nvim-telescope/telescope.nvim",
+        },
+    },
 
     {
         'mhinz/vim-startify'
@@ -521,9 +529,9 @@ local plugins = {
     --     end
     -- },
 
-    -- {
-    --     'vigoux/ltex-ls.nvim',
-    -- },
+    {
+        'vigoux/ltex-ls.nvim',
+    },
 
     {
         'simrat39/rust-tools.nvim'
@@ -663,6 +671,13 @@ function GenericKeybindsConfig()
         mode = "n",
         noremap = true
     })
+
+    wk.register({
+        ["<f5>"] = { require("telescope").extensions.vstask.tasks, "Launch tasks" }
+    }, {
+        mode = "n",
+        noremap = true
+    })
 end
 
 ---}}}
@@ -738,6 +753,10 @@ function TelescopeConfig()
     })
 
     vim.cmd([[autocmd User TelescopePreviewerLoaded setlocal wrap]])
+
+    require("vstask").setup {
+        config_dir = ".tasks"
+    }
 end
 
 ---}}}
@@ -751,6 +770,8 @@ function VimtexConfig()
     }, {
         prefix = "<leader>t"
     })
+
+    vim.g.vimtex_view_method = 'zathura'
 
     vim.cmd [[
     function! Synctex()
@@ -833,9 +854,9 @@ function LspConfig()
     })
 
 
-    -- require("lspconfig").ltex.setup {
-    --     filetypes = { "latex", "tex", "bib", "markdown", "text" },
-    -- }
+    require("lspconfig").ltex.setup {
+        filetypes = { "latex", "tex", "bib", "markdown", "text"},
+    }
 
     -- require("lspcV
     --     cmd = { "bunx", "tsserver"},
@@ -849,12 +870,14 @@ function LspConfig()
         "lua_ls",
         "omnisharp",
         "tsserver",
-        "svelte",
-        "gopls",
-        "wgsl_analyzer",
-        "hls",
-        "elixirls",
-        "zls"
+        "pyright",
+        "ruff_lsp"
+        -- "svelte",
+        -- "gopls",
+        -- "wgsl_analyzer",
+        -- "hls",
+        -- "elixirls",
+        -- "zls"
     })
 
     -- setup rust separately with rust tools
