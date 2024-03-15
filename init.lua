@@ -1,6 +1,7 @@
 -- local dark_colorscheme = "nightly"
 -- local dark_colorscheme = { "monokai-pro-spectrum", "dark" }
-local dark_colorscheme = { "gruvbox-baby", "dark" }
+local dark_colorscheme = { "rose-pine", "dark" }
+-- local dark_colorscheme = { "gruvbox-baby", "dark" }
 -- local dark_colorscheme = { "carbonfox", "dark" }
 -- local dark_colorscheme = { "biscuit", "dark" }
 -- local light_colorscheme = { "dayfox", "light" }
@@ -55,6 +56,64 @@ vim.o.cmdheight = 1
 vim.o.autoread = true
 ---}}}
 
+function TelescopeConfig()
+    require("telescope").setup({
+        defaults = require("telescope.themes").get_ivy()
+    })
+    -- require('telescope').load_extension('coc')
+
+    local menu = require("nui.menu")
+
+    local telescope_actions = {
+        -- { text = "Jump to definition",      cmd = "coc declarations" },
+        { text = "Show calls to this",      cmd = "lsp_incoming_calls" },
+        { text = "Show references to this", cmd = "lsp_references" },
+        { text = "Show workspace issues",   cmd = "diagnostics" },
+        { text = "Live grep",               cmd = "live_grep" },
+    }
+
+    Telescope_Menu = menu({
+        position = "50%",
+        border = {
+            style = "single",
+            text = {
+                top = "Telescope actions",
+                top_align = "center"
+            },
+        },
+        win_options = {
+            winhighlight = "Normal:Normal"
+        },
+    }, {
+        lines = (function()
+            local lines = {}
+            for k, v in ipairs(telescope_actions) do
+                lines[#lines + 1] = menu.item("" .. k .. ". " .. v.text, v)
+            end
+            return lines
+        end)(),
+        min_width = 40,
+        keymap = {
+            focus_next = { "<Down>" },
+            focus_prev = { "<Up>" },
+            close = { "<Esc>", "q" },
+            submit = { "<CR>" }
+        },
+        on_close = function()
+        end,
+        on_submit = function(item)
+            print(item.cmd)
+            vim.cmd(":Telescope " .. item.cmd)
+        end
+    })
+
+    vim.cmd([[autocmd User TelescopePreviewerLoaded setlocal wrap]])
+
+    require("vstask").setup {
+        config_dir = ".tasks"
+    }
+end
+
 ---{{{ Plugins
 local plugins = {
     -- Global utilities for neovim
@@ -84,11 +143,27 @@ local plugins = {
 
     {
         "nvim-telescope/telescope.nvim",
+        lazy = false,
+        dependencies = { "folke/which-key.nvim" },
+        config = function ()
+            TelescopeConfig()
+        end,
+
+        keys = {
+            {"==", ":Telescope<CR>", desc = "Telescope" },
+
+            {"<F2>", ":lua Telescope_Menu:mount()<CR>", desc = "LSP actions" },
+            {"<leader>e", "<cmd>Telescope diagnostics<CR>", desc = "Diagnostics"},
+            {"<F12>", "<cmd>Telescope resume<CR>", desc = "Resume last telescope" },
+            {"<leader>f", "<cmd>Telescope find_files<CR>", desc = "Find files",},
+            {"<leader>/", "<cmd>Telescope live_grep<CR>", "Grep in files",}
+        }
     },
 
     {
         'nvim-telescope/telescope-ui-select.nvim',
         dependencies = { "nvim-telescope/telescope.nvim" },
+        lazy = false,
         config = function()
             require("telescope").load_extension("ui-select")
         end
@@ -105,37 +180,43 @@ local plugins = {
             "nvim-lua/plenary.nvim",
             "nvim-telescope/telescope.nvim",
         },
+        keys = {
+            {"<f5>", 
+            function() 
+                require("telescope").extensions.vstask.tasks()
+            end, desc = "Launch tasks"}
+        }
     },
 
     {
         'mhinz/vim-startify'
     },
 
-    {
-        "nvim-neorg/neorg",
-        build = ":Neorg sync-parsers",
-        dependencies = { "nvim-lua/plenary.nvim" },
-        config = function()
-            require("neorg").setup {
-                load = {
-                    ["core.defaults"] = {},
-                    ["core.concealer"] = {},
-                    ["core.export"] = {},
-                    ["core.dirman"] = {
-                        config = {
-                            workspaces = {
-                                notes = "~/docs/notes",
-                            },
-                            default_workspace = "notes",
-                        },
-                    },
-                },
-            }
-
-            vim.wo.foldlevel = 99
-            vim.wo.conceallevel = 2
-        end,
-    },
+    -- {
+    --     "nvim-neorg/neorg",
+    --     build = ":Neorg sync-parsers",
+    --     dependencies = { "nvim-lua/plenary.nvim" },
+    --     config = function()
+    --         require("neorg").setup {
+    --             load = {
+    --                 ["core.defaults"] = {},
+    --                 ["core.concealer"] = {},
+    --                 ["core.export"] = {},
+    --                 ["core.dirman"] = {
+    --                     config = {
+    --                         workspaces = {
+    --                             notes = "~/docs/notes",
+    --                         },
+    --                         default_workspace = "notes",
+    --                     },
+    --                 },
+    --             },
+    --         }
+    --
+    --         vim.wo.foldlevel = 99
+    --         vim.wo.conceallevel = 2
+    --     end,
+    -- },
 
 
     {
@@ -146,6 +227,7 @@ local plugins = {
             vim.o.timeoutlen = 300
         end,
         opts = {
+            -- operators = { ";" }
             -- your configuration comes here
             -- or leave it empty to use the default settings
             -- refer to the configuration section below
@@ -294,14 +376,12 @@ local plugins = {
                 },
             }
 
-            local wk = require("which-key")
-            wk.register({
-                d = { '<cmd>NvimTreeToggle<CR>', 'Nvim-Tree toggle' }
-            }, {
-                prefix = "<leader>"
-            })
             -- Nmap('<leader>d', ':ProjectRootExe NvimTreeToggle<CR>', {silent = true})
-        end
+        end,
+
+        keys = {
+            { "<leader>d", "<cmd>NvimTreeToggle<CR>", desc = 'Nvim-tree toggle' }
+        }
     },
 
     -- Appearance utils
@@ -346,6 +426,7 @@ local plugins = {
     {
         'romgrk/barbar.nvim',
         dependencies = { 'nvim-tree/nvim-web-devicons' },
+        lazy = false,
         config = function()
             require "bufferline".setup {
                 auto_hide = false,
@@ -354,26 +435,24 @@ local plugins = {
                     button = '',
                 }
             }
+        end,
 
-            local wk = require("which-key")
+        keys = (function()
+            local keys = {
+                {"<M->>", "<Cmd>BufferMoveNext<CR>", desc = "Buffer move to next" },
+                {"<M-<>", "<Cmd>BufferMovePrevious<CR>", desc = "Buffer move to previous" },
+                { "<C-q>",  '<Cmd>BufferClose<CR>', desc = "Close buffer" }
+            }
 
             for i = 1, 10 do
-                wk.register({
-                        ['<M-' .. i .. '>'] =
-                        { '<Cmd>BufferGoto ' .. i .. '<CR>', "Change tabs" }
-                    },
-                    { mode = { "t", "n" } })
+                table.insert(keys,
+                    { '<M-' .. i .. '>', '<Cmd>BufferGoto ' .. i .. '<CR>', "Change tabs", mode = { "t", "n" } }
+                )
             end
 
-            wk.register({ ['<C-q>'] = { '<Cmd>BufferClose<CR>', "Close buffer" } })
-
-            wk.register({
-                ["<M->>"] = { "<Cmd>BufferMoveNext<CR>", "Buffer move to next" },
-                ["<M-<>"] = { "<Cmd>BufferMovePrevious<CR>", "Buffer move to previous" }
-            })
-        end
+            return keys
+        end)()
     }, --barbar
-    --
 
     {
         'nvim-lualine/lualine.nvim',
@@ -429,26 +508,19 @@ local plugins = {
     {
         'numToStr/Comment.nvim',
         config = function()
-            require('Comment').setup({
+            print("Hello")
+            require('Comment').setup {
                 mappings = {
                     basic = true,
                     extra = false
                 }
-            })
+            }
+        end,
 
-            local wk = require("which-key")
-            wk.register({
-                [';'] = { "gccj", "Comment line" }
-            }, {
-                noremap = false
-            })
-            wk.register({
-                [';'] = { "gc", "Comment block" }
-            }, {
-                mode = 'v',
-                noremap = false
-            })
-        end
+        keys = {
+            {";", "<Plug>(comment_toggle_linewise_current)j", desc = "Comment line", noremap = false },
+            {";", "<Plug>(comment_toggle_linewise_visual)", desc = "Comment block", mode = "v", noremap = false },
+        }
     },
 
 
@@ -456,7 +528,7 @@ local plugins = {
     { 'williamboman/mason.nvim' },
     { 'williamboman/mason-lspconfig.nvim' },
 
-    { 'VonHeikemen/lsp-zero.nvim',          branch = 'v3.x' },
+    { 'VonHeikemen/lsp-zero.nvim', branch = 'v3.x' },
     { 'neovim/nvim-lspconfig',
         init_options = {
             userLanguages = {
@@ -537,28 +609,6 @@ local plugins = {
         'simrat39/rust-tools.nvim'
     },
 
-    -- {
-    --     'puremourning/vimspector',
-    --     config = function()
-    --         local wk = require('which-key')
-    --         wk.register({
-    --             ["pp"] = { "<Plug>VimspectorBalloonEval", "Vimspector balloon eval" }
-    --         }, {
-    --             prefix = "<leader>",
-    --             mode = "n",
-    --         })
-    --     end
-    -- },
-
-    {
-        'mfussenegger/nvim-dap',
-    },
-
-    {
-        "rcarriga/nvim-dap-ui",
-        dependencies = { "mfussenegger/nvim-dap" }
-    },
-
     {
         "iamcco/markdown-preview.nvim",
         cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
@@ -603,38 +653,6 @@ function FileTypesConfig()
     })
 end
 
---- {{{ Dap
-function DapConfig()
-    local dap = require("dap")
-
-    dap.adapters.coreclr = {
-        type = 'executable',
-        command = '/usr/bin/netcoredbg',
-        args = { '--interpreter=vscode' }
-    }
-
-    dap.configurations.cs = {
-        {
-            type = "coreclr",
-            name = "launch - netcoredbg",
-            request = "launch",
-            program = function()
-                return vim.fn.input('Path to dll', vim.fn.getcwd() .. '/bin/Debug/', 'file')
-            end,
-        },
-    }
-
-    require("dapui").setup()
-    wk.register({
-        ["=?"] = { require("dapui").toggle, "Toggle dapui" },
-        ["=/"] = { ":DapContinue<CR>", "Start Dap" }
-    }, {
-        prefix = "<leader>",
-        mode = "n"
-    })
-end
-
----}}}
 
 ---{{{ Generic Keybinds
 function GenericKeybindsConfig()
@@ -671,92 +689,6 @@ function GenericKeybindsConfig()
         mode = "n",
         noremap = true
     })
-
-    wk.register({
-        ["<f5>"] = { require("telescope").extensions.vstask.tasks, "Launch tasks" }
-    }, {
-        mode = "n",
-        noremap = true
-    })
-end
-
----}}}
-
---- {{{ Telescope
-function TelescopeConfig()
-    require("telescope").setup({
-        defaults = require("telescope.themes").get_ivy()
-    })
-    -- require('telescope').load_extension('coc')
-
-    local menu = require("nui.menu")
-
-    local telescope_actions = {
-        -- { text = "Jump to definition",      cmd = "coc declarations" },
-        { text = "Show calls to this",      cmd = "lsp_incoming_calls" },
-        { text = "Show references to this", cmd = "lsp_references" },
-        { text = "Show workspace issues",   cmd = "diagnostics" },
-        { text = "Live grep",               cmd = "live_grep" },
-    }
-
-    Telescope_Menu = menu({
-        position = "50%",
-        border = {
-            style = "single",
-            text = {
-                top = "Telescope actions",
-                top_align = "center"
-            },
-        },
-        win_options = {
-            winhighlight = "Normal:Normal"
-        },
-    }, {
-        lines = (function()
-            local lines = {}
-            for k, v in ipairs(telescope_actions) do
-                lines[#lines + 1] = menu.item("" .. k .. ". " .. v.text, v)
-            end
-            return lines
-        end)(),
-        min_width = 40,
-        keymap = {
-            focus_next = { "<Down>" },
-            focus_prev = { "<Up>" },
-            close = { "<Esc>", "q" },
-            submit = { "<CR>" }
-        },
-        on_close = function()
-        end,
-        on_submit = function(item)
-            print(item.cmd)
-            vim.cmd(":Telescope " .. item.cmd)
-        end
-    })
-
-
-    wk.register({
-        ["=="] = { ":Telescope<CR>", "Telescope" }
-    }, {
-        prefix = "<leader>",
-        mode = "n"
-    })
-
-    wk.register({ ["<F2>"] = { ":lua Telescope_Menu:mount()<CR>", "LSP actions" } })
-    wk.register({ ["e"] = { "<cmd>Telescope diagnostics<CR>", "Diagnostics" } }, { prefix = "<leader>" })
-    wk.register({ ["<F12>"] = { "<cmd>Telescope resume<CR>", "Resume last telescope" } })
-    wk.register({
-        ["f"] = { "<cmd>Telescope find_files<CR>", "Find files" },
-        ["/"] = { "<cmd>Telescope live_grep<CR>", "Grep in files" }
-    }, {
-        prefix = "<leader>"
-    })
-
-    vim.cmd([[autocmd User TelescopePreviewerLoaded setlocal wrap]])
-
-    require("vstask").setup {
-        config_dir = ".tasks"
-    }
 end
 
 ---}}}
@@ -871,7 +803,9 @@ function LspConfig()
         "omnisharp",
         "tsserver",
         "pyright",
-        "ruff_lsp"
+        -- "pylsp",
+        "ruff_lsp",
+        "jsonls"
         -- "svelte",
         -- "gopls",
         -- "wgsl_analyzer",
@@ -976,29 +910,13 @@ end
 
 ---}}}
 
----}}}
-
----{{{ Neorg config 
-function NeorgConfig()
-    wk.register({
-        ["nj"] = { ":Neorg journal today<CR>", "Open today's journal" },
-        ["ni"] = { ":Neorg index<CR>", "Open index file" },
-    }, {
-        mode = "n",
-        prefix = "<leader>",
-    })
-end
---}}}
-
 function Configuration()
     FileTypesConfig()
-    DapConfig()
-    TelescopeConfig()
+    -- TelescopeConfig()
     VimtexConfig()
     LspConfig()
     GenericKeybindsConfig()
     TextWidthConfig()
-    NeorgConfig()
 
     highlight(0, 'FloatBorder', { link = 'Normal' })
     highlight(0, 'NormalFloat', { link = 'Normal' })
