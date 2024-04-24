@@ -1,10 +1,10 @@
 -- local dark_colorscheme = "nightly"
 -- local dark_colorscheme = { "monokai-pro-spectrum", "dark" }
-local dark_colorscheme = { "rose-pine", "dark" }
--- local dark_colorscheme = { "gruvbox-baby", "dark" }
+-- local dark_colorscheme = { "rose-pine", "dark" }
+local dark_colorscheme = { "gruvbox-baby", "dark" }
 -- local dark_colorscheme = { "carbonfox", "dark" }
 -- local dark_colorscheme = { "biscuit", "dark" }
--- local light_colorscheme = { "dayfox", "light" }
+local light_colorscheme = { "dayfox", "light" }
 -- local colorscheme = light_colorscheme
 local colorscheme = dark_colorscheme
 
@@ -143,27 +143,29 @@ local plugins = {
 
     {
         "nvim-telescope/telescope.nvim",
-        lazy = false,
+        event = "VeryLazy",
+        -- lazy = false,
         dependencies = { "folke/which-key.nvim" },
-        config = function ()
+        config = function()
             TelescopeConfig()
         end,
 
         keys = {
-            {"==", ":Telescope<CR>", desc = "Telescope" },
+            { "<leader>==", ":Telescope<CR>",                  desc = "Telescope" },
 
-            {"<F2>", ":lua Telescope_Menu:mount()<CR>", desc = "LSP actions" },
-            {"<leader>e", "<cmd>Telescope diagnostics<CR>", desc = "Diagnostics"},
-            {"<F12>", "<cmd>Telescope resume<CR>", desc = "Resume last telescope" },
-            {"<leader>f", "<cmd>Telescope find_files<CR>", desc = "Find files",},
-            {"<leader>/", "<cmd>Telescope live_grep<CR>", "Grep in files",}
+            { "<F2>",       ":lua Telescope_Menu:mount()<CR>", desc = "LSP actions" },
+            { "<leader>e",  "<cmd>Telescope diagnostics<CR>",  desc = "Diagnostics" },
+            { "<F12>",      "<cmd>Telescope resume<CR>",       desc = "Resume last telescope" },
+            { "<leader>f",  "<cmd>Telescope find_files<CR>",   desc = "Find files", },
+            { "<leader>/",  "<cmd>Telescope live_grep<CR>",    "Grep in files", }
         }
     },
 
     {
         'nvim-telescope/telescope-ui-select.nvim',
         dependencies = { "nvim-telescope/telescope.nvim" },
-        lazy = false,
+        event = "VeryLazy",
+        -- lazy = false,
         config = function()
             require("telescope").load_extension("ui-select")
         end
@@ -175,16 +177,20 @@ local plugins = {
 
     {
         "EthanJWright/vs-tasks.nvim",
+        event = "VeryLazy",
         dependencies = {
             "nvim-lua/popup.nvim",
             "nvim-lua/plenary.nvim",
             "nvim-telescope/telescope.nvim",
         },
         keys = {
-            {"<f5>", 
-            function() 
-                require("telescope").extensions.vstask.tasks()
-            end, desc = "Launch tasks"}
+            {
+                "<f5>",
+                function()
+                    require("telescope").extensions.vstask.tasks()
+                end,
+                desc = "Launch tasks"
+            }
         }
     },
 
@@ -241,6 +247,7 @@ local plugins = {
 
     {
         'EdenEast/nightfox.nvim',
+        event = "VeryLazy",
         config = function()
             require("nightfox").setup {
                 options = {
@@ -260,11 +267,14 @@ local plugins = {
     }, -- nightfox
 
     {
-        'rose-pine/neovim', name = 'rose-pine'
+        'rose-pine/neovim',
+        name = 'rose-pine',
+        event = "VeryLazy",
     },
 
     {
         'kartikp10/noctis.nvim',
+        event = "VeryLazy",
         name = 'noctis',
         dependencies = {
             'rktjmp/lush.nvim'
@@ -273,14 +283,16 @@ local plugins = {
 
     {
         'Biscuit-Colorscheme/nvim',
+        event = "VeryLazy",
         name = 'biscuit',
-        lazy = false,
+        -- lazy = false,
         priority = 1000,
     },
 
 
     {
         "Shatur/neovim-ayu",
+        event = "VeryLazy",
         config = function()
             require('ayu').setup {
                 mirage = false
@@ -290,7 +302,7 @@ local plugins = {
 
     {
         "projekt0n/github-nvim-theme",
-        lazy = false,
+        -- lazy = false,
         config = function()
             require("github-theme").setup {}
         end
@@ -298,6 +310,7 @@ local plugins = {
 
     {
         'luisiacc/gruvbox-baby',
+        event = "VeryLazy",
         config = function()
             -- vim.g.gruvbox_baby_function_style = "NONE"
             vim.g.gruvbox_baby_keyword_style = "italic"
@@ -319,6 +332,7 @@ local plugins = {
 
     {
         "loctvl842/monokai-pro.nvim",
+        event = "VeryLazy",
         config = function()
             require("monokai-pro").setup()
         end
@@ -326,6 +340,7 @@ local plugins = {
 
     {
         "Alexis12119/nightly.nvim",
+        event = "VeryLazy",
         config = function()
             require("nightly").setup {}
         end
@@ -345,6 +360,7 @@ local plugins = {
 
     {
         'nvim-tree/nvim-tree.lua',
+        event = "VeryLazy",
         dependencies = {
             'nvim-tree/nvim-web-devicons', -- optional, for file icons
         },
@@ -439,9 +455,9 @@ local plugins = {
 
         keys = (function()
             local keys = {
-                {"<M->>", "<Cmd>BufferMoveNext<CR>", desc = "Buffer move to next" },
-                {"<M-<>", "<Cmd>BufferMovePrevious<CR>", desc = "Buffer move to previous" },
-                { "<C-q>",  '<Cmd>BufferClose<CR>', desc = "Close buffer" }
+                { "<M->>", "<Cmd>BufferMoveNext<CR>",     desc = "Buffer move to next" },
+                { "<M-<>", "<Cmd>BufferMovePrevious<CR>", desc = "Buffer move to previous" },
+                { "<C-q>", '<Cmd>BufferClose<CR>',        desc = "Close buffer" }
             }
 
             for i = 1, 10 do
@@ -497,12 +513,12 @@ local plugins = {
     }, -- lualine
 
 
-    {
-        "andweeb/presence.nvim",
-        config = function()
-            require("presence").setup {}
-        end
-    },
+    -- {
+    --     "andweeb/presence.nvim",
+    --     config = function()
+    --         require("presence").setup {}
+    --     end
+    -- },
 
 
     {
@@ -518,8 +534,8 @@ local plugins = {
         end,
 
         keys = {
-            {";", "<Plug>(comment_toggle_linewise_current)j", desc = "Comment line", noremap = false },
-            {";", "<Plug>(comment_toggle_linewise_visual)", desc = "Comment block", mode = "v", noremap = false },
+            { ";", "<Plug>(comment_toggle_linewise_current)j", desc = "Comment line",  noremap = false },
+            { ";", "<Plug>(comment_toggle_linewise_visual)",   desc = "Comment block", mode = "v",     noremap = false },
         }
     },
 
@@ -528,14 +544,21 @@ local plugins = {
     { 'williamboman/mason.nvim' },
     { 'williamboman/mason-lspconfig.nvim' },
 
-    { 'VonHeikemen/lsp-zero.nvim', branch = 'v3.x' },
-    { 'neovim/nvim-lspconfig',
+    { 'VonHeikemen/lsp-zero.nvim',        branch = 'v3.x' },
+    {
+        'neovim/nvim-lspconfig',
         init_options = {
             userLanguages = {
                 rust = "html"
             }
         }
     },
+
+    {
+        "prettier/vim-prettier"
+    },
+
+    -- { 'fatih/vim-go' },
 
 
     { 'hrsh7th/cmp-nvim-lsp' },
@@ -549,15 +572,15 @@ local plugins = {
         version = "v2.*"
     },
 
-    {
-        'stevearc/aerial.nvim',
-        opts = {},
-        -- Optional dependencies
-        dependencies = {
-            "nvim-treesitter/nvim-treesitter",
-            "nvim-tree/nvim-web-devicons"
-        },
-    },
+    -- {
+    --     'stevearc/aerial.nvim',
+    --     opts = {},
+    --     -- Optional dependencies
+    --     dependencies = {
+    --         "nvim-treesitter/nvim-treesitter",
+    --         "nvim-tree/nvim-web-devicons"
+    --     },
+    -- },
 
     {
         'tamago324/nlsp-settings.nvim',
@@ -601,16 +624,19 @@ local plugins = {
     --     end
     -- },
 
-    {
-        'vigoux/ltex-ls.nvim',
-    },
+    -- {
+    --     'vigoux/ltex-ls.nvim',
+    --     event = "VeryLazy",
+    -- },
 
     {
-        'simrat39/rust-tools.nvim'
+        'simrat39/rust-tools.nvim',
+        event = "VeryLazy",
     },
 
     {
         "iamcco/markdown-preview.nvim",
+        event = "VeryLazy",
         cmd = { "MarkdownPreviewToggle", "MarkdownPreview", "MarkdownPreviewStop" },
         ft = { "markdown" },
         build = function() vim.fn["mkdp#util#install"]() end,
@@ -621,8 +647,9 @@ local plugins = {
         'lervag/vimtex',
         config = function()
             vim.g.tex_flavor = "latex"
-            vim.g.vimtex_quickfix_ignore_filters = { 'Underfull', 'Overfull', 'Token not allowed', 'Size', 'Draft', 'Font shape' }
-            vim.g.vimtex_view_method = "zathura"
+            vim.g.vimtex_quickfix_ignore_filters = { 'Underfull', 'Overfull', 'Token not allowed', 'Size', 'Draft',
+                'Font shape' }
+            -- vim.g.vimtex_view_method = "general"
             vim.g.Tex_IgnoreLevel = 8
             vim.g.vimtex_compiler_latexmk = {
                 continuous = 1,
@@ -652,7 +679,6 @@ function FileTypesConfig()
         end,
     })
 end
-
 
 ---{{{ Generic Keybinds
 function GenericKeybindsConfig()
@@ -703,14 +729,14 @@ function VimtexConfig()
         prefix = "<leader>t"
     })
 
-    vim.g.vimtex_view_method = 'zathura'
+    vim.g.vimtex_view_method = 'zathura_simple'
 
-    vim.cmd [[
-    function! Synctex()
-            " remove 'silent' for debugging
-            execute "silent !zathura --synctex-forward " . line('.') . ":" . col('.') . ":" . bufname('%') . " " . g:syncpdf
-    endfunction
-    ]]
+    -- vim.cmd [[
+    -- function! Synctex()
+    --         " remove 'silent' for debugging
+    --         execute "silent !zathura --synctex-forward " . line('.') . ":" . col('.') . ":" . bufname('%') . " " . g:syncpdf
+    -- endfunction
+    -- ]]
 end
 
 ---}}}
@@ -743,6 +769,13 @@ function TextWidthConfig()
     vim.api.nvim_create_autocmd({ "BufEnter" }, {
         pattern = { "*.tex" },
         callback = SetupTextWidth
+    })
+
+    vim.api.nvim_create_autocmd({ "BufEnter" }, {
+        pattern = { "*.md" },
+        callback = function()
+            vim.cmd([[setlocal textwidth=120]])
+        end
     })
 end
 
@@ -785,9 +818,19 @@ function LspConfig()
         }
     })
 
+    local lspconfig = require("lspconfig")
 
-    require("lspconfig").ltex.setup {
-        filetypes = { "latex", "tex", "bib", "markdown", "text"},
+    -- lspconfig.ltex.setup {
+    --     filetypes = { "latex", "tex", "bib", "markdown", "text" },
+    -- }
+
+    lspconfig.denols.setup {
+        root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
+    }
+
+    lspconfig.tsserver.setup {
+        root_dir = lspconfig.util.root_pattern("package.json"),
+        single_file_support = false
     }
 
     -- require("lspcV
@@ -801,13 +844,14 @@ function LspConfig()
     lsp_zero.setup_servers({
         "lua_ls",
         "omnisharp",
-        "tsserver",
-        "pyright",
-        -- "pylsp",
-        "ruff_lsp",
-        "jsonls"
+        -- "tsserver",
+        -- "pyright",
+        "pylsp",
+        -- "ruff_lsp",
+        "jsonls",
         -- "svelte",
-        -- "gopls",
+        "gopls",
+        "tailwindcss",
         -- "wgsl_analyzer",
         -- "hls",
         -- "elixirls",
@@ -892,20 +936,20 @@ function LspConfig()
         }
     })
 
-    require("aerial").setup {
-        layout = {
-            max_width = { 0.25 },
-            min_width = 30
-        },
-        on_attach = function(bufnr)
-        end
-    }
+    -- require("aerial").setup {
+    --     layout = {
+    --         max_width = { 0.25 },
+    --         min_width = 30
+    --     },
+    --     on_attach = function(bufnr)
+    --     end
+    -- }
 
-    wk.register({
-        ["s"] = { "<cmd>AerialToggle<CR>", "Open aerial" }
-    }, {
-        prefix = "<leader>"
-    })
+    -- wk.register({
+    --     ["s"] = { "<cmd>AerialToggle<CR>", "Open aerial" }
+    -- }, {
+    --     prefix = "<leader>"
+    -- })
 end
 
 ---}}}
