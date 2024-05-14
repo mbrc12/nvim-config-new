@@ -34,6 +34,7 @@ vim.o.incsearch = true
 vim.o.hlsearch = true
 vim.o.ignorecase = true
 vim.o.smartcase = true
+vim.o.autoindent = true
 -- vim.o.relativenumber = true
 vim.wo.cursorline = true
 vim.o.errorbells = false
@@ -833,6 +834,14 @@ function LspConfig()
         single_file_support = false
     }
 
+    lspconfig.pylsp.setup {
+        cmd = { "rye", "run", "pylsp" }
+    }
+
+    lspconfig.ruff_lsp.setup {
+        cmd = { "rye", "run", "ruff-lsp" }
+    }
+
     -- require("lspcV
     --     cmd = { "bunx", "tsserver"},
     --     init_options = {
@@ -846,12 +855,12 @@ function LspConfig()
         "omnisharp",
         -- "tsserver",
         -- "pyright",
-        "pylsp",
         -- "ruff_lsp",
         "jsonls",
         -- "svelte",
         "gopls",
         "tailwindcss",
+        "gdscript"
         -- "wgsl_analyzer",
         -- "hls",
         -- "elixirls",
