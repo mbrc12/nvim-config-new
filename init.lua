@@ -4,6 +4,8 @@
 local dark_colorscheme = { "gruvbox-baby", "dark" }
 -- local dark_colorscheme = { "carbonfox", "dark" }
 -- local dark_colorscheme = { "biscuit", "dark" }
+-- local dark_colorscheme = { "abscs", "dark" }
+
 local light_colorscheme = { "dayfox", "light" }
 -- local colorscheme = light_colorscheme
 local colorscheme = dark_colorscheme
@@ -310,6 +312,10 @@ local plugins = {
     },
 
     {
+        'Abstract-IDE/Abstract-cs'
+    },
+
+    {
         'luisiacc/gruvbox-baby',
         event = "VeryLazy",
         config = function()
@@ -552,7 +558,7 @@ local plugins = {
             userLanguages = {
                 rust = "html"
             }
-        }
+        },
     },
 
     {
@@ -618,12 +624,22 @@ local plugins = {
         end
     },
 
-    -- {
-    --     'lvimuser/lsp-inlayhints.nvim',
-    --     config = function ()
-    --         require("lsp-inlayhints").setup()
-    --     end
-    -- },
+    {
+        "hedyhli/outline.nvim",
+        config = function()
+            -- Example mapping to toggle outline
+            vim.keymap.set("n", "<leader>g", "<cmd>Outline<CR>",
+                { desc = "Toggle Outline" })
+
+            require("outline").setup {
+                -- Your setup opts here (leave empty to use defaults)
+                outline_window = {
+                    width = 20,
+                    relative_width = true
+                }
+            }
+        end,
+    },
 
     -- {
     --     'vigoux/ltex-ls.nvim',
@@ -649,7 +665,7 @@ local plugins = {
         config = function()
             vim.g.tex_flavor = "latex"
             vim.g.vimtex_quickfix_ignore_filters = { 'Underfull', 'Overfull', 'Token not allowed', 'Size', 'Draft',
-                'Font shape' }
+                'Citation', 'reference', 'Reference', 'Font shape', 'recommended'}
             -- vim.g.vimtex_view_method = "general"
             vim.g.Tex_IgnoreLevel = 8
             vim.g.vimtex_compiler_latexmk = {
@@ -790,7 +806,7 @@ function LspConfig()
         -- see :help lsp-zero-keybindings
         -- to learn the available actions
         lsp_zero.default_keymaps({ buffer = bufnr, preserve_mappings = false })
-        -- vim.lsp.inlay_hint.enable(bufnr, true)
+        vim.lsp.inlay_hint.enable(true)
         -- require("lsp-inlayhints").on_attach(client, bufnr)
     end)
 
@@ -821,9 +837,9 @@ function LspConfig()
 
     local lspconfig = require("lspconfig")
 
-    -- lspconfig.ltex.setup {
-    --     filetypes = { "latex", "tex", "bib", "markdown", "text" },
-    -- }
+    lspconfig.ltex.setup {
+        filetypes = { "latex", "tex", "bib", "markdown", "text" },
+    }
 
     lspconfig.denols.setup {
         root_dir = lspconfig.util.root_pattern("deno.json", "deno.jsonc"),
@@ -842,6 +858,30 @@ function LspConfig()
         cmd = { "rye", "run", "ruff-lsp" }
     }
 
+    lspconfig.gopls.setup {
+        settings = {
+            hints = {
+                rangeVariableTypes = true,
+                parameterNames = true,
+                constantValues = true,
+                assignVariableTypes = true,
+                compositeLiteralFields = true,
+                compositeLiteralTypes = true,
+                functionTypeParameters = true,
+            }
+        }
+    }
+
+    lspconfig.lua_ls.setup {
+        settings = {
+            Lua = {
+                hint = {
+                    enable = true
+                }
+            }
+        }
+    }
+
     -- require("lspcV
     --     cmd = { "bunx", "tsserver"},
     --     init_options = {
@@ -851,16 +891,17 @@ function LspConfig()
     -- }
     --
     lsp_zero.setup_servers({
-        "lua_ls",
         "omnisharp",
+        "clangd",
         -- "tsserver",
         -- "pyright",
         -- "ruff_lsp",
         "jsonls",
         -- "svelte",
-        "gopls",
         "tailwindcss",
-        "gdscript"
+        "gdscript",
+        "jdtls",
+        "lua_ls"
         -- "wgsl_analyzer",
         -- "hls",
         -- "elixirls",
